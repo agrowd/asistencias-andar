@@ -5,7 +5,6 @@ import {
   CheckCircle2, 
   XCircle, 
   Save, 
-  ChevronRight,
   Loader2,
   Filter,
   BarChart3,
@@ -212,6 +211,7 @@ function App() {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
+      const newState: AsistenciaState = {};
       // LOGICA INVERSA: Todos presentes por defecto (1)
       alumnos.forEach(a => {
         newState[a.id] = 1;
