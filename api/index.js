@@ -3,7 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import db from './db.js';
+import db from '../db.js';
 
 const app = express();
 const port = process.env.PORT || 3001;
