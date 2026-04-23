@@ -33,15 +33,31 @@ if (isProduction) {
             return {
                 get: async (...params) => {
                     const res = await sql.query(pgQuery, params);
-                    return res.rows[0];
+                    const row = res.rows[0];
+                    if (row) {
+                        for (let key in row) {
+                            if (row[key] instanceof Date) {
+                                row[key] = row[key].toISOString().split('T')[0];
+                            }
+                        }
+                    }
+                    return row;
                 },
                 all: async (...params) => {
                     const res = await sql.query(pgQuery, params);
-                    return res.rows;
+                    return res.rows.map(row => {
+                        for (let key in row) {
+                            if (row[key] instanceof Date) {
+                                row[key] = row[key].toISOString().split('T')[0];
+                            }
+                        }
+                        return row;
+                    });
                 },
                 run: async (...params) => {
                     const res = await sql.query(pgQuery, params);
-                    return { lastInsertRowid: res.rows[0]?.id || null, changes: res.rowCount };
+                    const row = res.rows[0];
+                    return { lastInsertRowid: row?.id || null, changes: res.rowCount };
                 }
             };
         },

@@ -193,7 +193,7 @@ app.get('/api/asistencias/history', authenticateToken, async (req, res) => {
         const params = [];
 
         if (month && year) {
-            query += " AND asist.fecha LIKE ?";
+            query += " AND CAST(asist.fecha AS TEXT) LIKE ?";
             params.push(`${year}-${month.toString().padStart(2, '0')}%`);
         }
 
