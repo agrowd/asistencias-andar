@@ -787,7 +787,7 @@ function App() {
                       <button 
                         onClick={async () => {
                           if (confirm('¿Eliminar alumno?')) {
-                            await fetch(`http://localhost:3001/api/alumnos/${alumno.id}`, {
+                            await fetch(`/api/alumnos/${alumno.id}`, {
                               method: 'DELETE',
                               headers: { 'Authorization': `Bearer ${token}` }
                             });
