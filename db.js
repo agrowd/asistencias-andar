@@ -1,5 +1,4 @@
 
-import sqlite from 'better-sqlite3';
 import { neon } from '@neondatabase/serverless';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -35,7 +34,6 @@ if (isProduction) {
             
             return {
                 get: async (...params) => {
-                    // Use sql.query for conventional parameter passing
                     const res = await sql.query(pgQuery, params);
                     return res.rows[0];
                 },
@@ -54,6 +52,8 @@ if (isProduction) {
         }
     };
 } else {
+    // Lazy load better-sqlite3 only in development
+    const sqlite = (await import('better-sqlite3')).default;
     const dbPath = path.join(__dirname, 'data', 'asistencias.db');
     const sqliteDb = new sqlite(dbPath);
     db = {
