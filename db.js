@@ -19,7 +19,7 @@ const DIALECT = isProduction ? {
 let db;
 
 if (isProduction) {
-    const sql = neon(process.env.DATABASE_URL);
+    const sql = neon(process.env.DATABASE_URL, { fullResults: true });
     db = {
         isAsync: true,
         prepare: (query) => {
@@ -34,16 +34,16 @@ if (isProduction) {
             
             return {
                 get: async (...params) => {
-                    const rows = await sql(pgQuery, params);
-                    return rows[0];
+                    const res = await sql.query(pgQuery, params);
+                    return res.rows[0];
                 },
                 all: async (...params) => {
-                    const rows = await sql(pgQuery, params);
-                    return rows;
+                    const res = await sql.query(pgQuery, params);
+                    return res.rows;
                 },
                 run: async (...params) => {
-                    const rows = await sql(pgQuery, params);
-                    return { lastInsertRowid: rows[0]?.id || null, changes: rows.length };
+                    const res = await sql.query(pgQuery, params);
+                    return { lastInsertRowid: res.rows[0]?.id || null, changes: res.rowCount };
                 }
             };
         },
