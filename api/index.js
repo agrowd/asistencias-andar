@@ -257,6 +257,15 @@ app.get('/api/stats/critical', authenticateToken, isAdmin, async (req, res) => {
     }
 });
 
+app.get('/api/health', async (req, res) => {
+    try {
+        const result = await db.prepare('SELECT 1 as connected').get();
+        res.json({ status: 'ok', database: 'connected', result });
+    } catch (error) {
+        res.status(500).json({ status: 'error', message: error.message, stack: error.stack });
+    }
+});
+
 if (process.env.NODE_ENV !== 'production') {
     app.listen(port, () => {
         console.log(`[L] Backend running at http://localhost:${port}`);

@@ -23,12 +23,10 @@ if (isProduction) {
     db = {
         isAsync: true,
         prepare: (query) => {
-            // Replace dialect tokens
             let finalQuery = query
                 .replace(/DIALECT_NOW/g, DIALECT.NOW)
                 .replace(/DIALECT_START_OF_MONTH/g, DIALECT.START_OF_MONTH);
 
-            // Convert ? to $1, $2... for Postgres
             let count = 0;
             const pgQuery = finalQuery.replace(/\?/g, () => `$${++count}`);
             
@@ -52,29 +50,34 @@ if (isProduction) {
         }
     };
 } else {
-    // Lazy load better-sqlite3 only in development
-    const sqlite = (await import('better-sqlite3')).default;
-    const dbPath = path.join(__dirname, 'data', 'asistencias.db');
-    const sqliteDb = new sqlite(dbPath);
-    db = {
-        isAsync: false,
-        prepare: (query) => {
-            let finalQuery = query
-                .replace(/DIALECT_NOW/g, DIALECT.NOW)
-                .replace(/DIALECT_START_OF_MONTH/g, DIALECT.START_OF_MONTH);
-                
-            const stmt = sqliteDb.prepare(finalQuery);
-            return {
-                get: async (...params) => stmt.get(...params),
-                all: async (...params) => stmt.all(...params),
-                run: async (...params) => {
-                    const res = stmt.run(...params);
-                    return { lastInsertRowid: res.lastInsertRowid, changes: res.changes };
-                }
-            };
-        },
-        transaction: (fn) => (data) => sqliteDb.transaction(fn)(data)
+    // We wrap this in a way that Vercel's bundler hopefully ignores it or it doesn't crash the startup
+    const initSqlite = async () => {
+        const sqlite = (await import('better-sqlite3')).default;
+        const dbPath = path.join(__dirname, 'data', 'asistencias.db');
+        const sqliteDb = new sqlite(dbPath);
+        return {
+            isAsync: false,
+            prepare: (query) => {
+                let finalQuery = query
+                    .replace(/DIALECT_NOW/g, DIALECT.NOW)
+                    .replace(/DIALECT_START_OF_MONTH/g, DIALECT.START_OF_MONTH);
+                    
+                const stmt = sqliteDb.prepare(finalQuery);
+                return {
+                    get: async (...params) => stmt.get(...params),
+                    all: async (...params) => stmt.all(...params),
+                    run: async (...params) => {
+                        const res = stmt.run(...params);
+                        return { lastInsertRowid: res.lastInsertRowid, changes: res.changes };
+                    }
+                };
+            },
+            transaction: (fn) => (data) => sqliteDb.transaction(fn)(data)
+        };
     };
+    
+    // For local dev, we can use top-level await
+    db = await initSqlite();
 }
 
 export default db;
