@@ -15,7 +15,9 @@ import {
   History,
   LogOut,
   Lock,
-  User as UserIcon
+  User as UserIcon,
+  AlertCircle,
+  Info
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as XLSX from 'xlsx';
@@ -46,6 +48,8 @@ function App() {
   const [user, setUser] = useState<any>(null);
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [historyStats, setHistoryStats] = useState({ present: 0, absent: 0 });
   const [loginError, setLoginError] = useState('');
   const [historyData, setHistoryData] = useState<any[]>([]);
   const [historyFilter, setHistoryFilter] = useState({ month: new Date().getMonth() + 1, year: new Date().getFullYear() });
@@ -250,6 +254,7 @@ function App() {
   };
 
   const handleSave = async () => {
+    setShowConfirmModal(false);
     setSaveStatus('saving');
     try {
       const payload = {
@@ -304,27 +309,56 @@ function App() {
 
   const exportToPDF = (data: any[] = filteredAlumnos, title: string = `Asistencia - ${selectedGroup}`) => {
     const doc = new (jsPDF as any)();
-    doc.setFontSize(18);
-    doc.text(title, 14, 22);
-    doc.setFontSize(11);
-    doc.text(`Fecha: ${date}`, 14, 30);
+    
+    // Header Institucional
+    doc.setFillColor(99, 102, 241); // Indigo color
+    doc.rect(0, 0, 210, 40, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(24);
+    doc.setFont("helvetica", "bold");
+    doc.text("ORGANIZACIÓN ANDAR", 14, 25);
+    
+    doc.setFontSize(12);
+    doc.text(title.toUpperCase(), 14, 34);
+    
+    doc.setTextColor(100, 100, 100);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Fecha de emisión: ${new Date().toLocaleDateString()}`, 14, 48);
+    doc.text(`Filtro aplicado: ${date}`, 14, 54);
 
-    const tableData = data.map(a => [
-      `${a.apellido} ${a.nombre}`,
-      a.grupo,
-      attendance[a.id] === 1 ? 'PRESENTE' : attendance[a.id] === 2 ? 'JUSTIFICADO' : 'AUSENTE',
-      attendance[a.id] !== 1 && (attendance as any)[`prof_${a.id}`] ? (attendance as any)[`prof_${a.id}`] : '-'
-    ]);
-
-    (doc as any).autoTable({
-      startY: 35,
-      head: [['Nombre', 'Grupo', 'Estado', 'Profesor']],
-      body: tableData,
-      theme: 'grid',
-      headStyles: { fillStyle: [99, 102, 241] }
+    const tableData = data.map(a => {
+      const state = a.presente !== undefined ? a.presente : attendance[a.id];
+      const prof = a.profesor_nombre || (attendance as any)[`prof_${a.id}`] || '-';
+      return [
+        `${a.apellido} ${a.nombre}`,
+        a.grupo,
+        state === 1 ? 'PRESENTE' : state === 2 ? 'JUSTIFICADO' : 'AUSENTE',
+        state !== 1 ? prof : '-'
+      ];
     });
 
-    doc.save(`reporte_${date}.pdf`);
+    (doc as any).autoTable({
+      startY: 60,
+      head: [['Nombre Completo', 'Grupo / Área', 'Estado', 'Registrado por']],
+      body: tableData,
+      theme: 'striped',
+      headStyles: { fillColor: [99, 102, 241], textColor: 255, fontStyle: 'bold' },
+      styles: { fontSize: 9, cellPadding: 5 },
+      alternateRowStyles: { fillColor: [245, 247, 255] }
+    });
+
+    // Footer
+    const pageCount = (doc as any).internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(150, 150, 150);
+      doc.text(`Página ${i} de ${pageCount} - Andar CRM Asistencia`, 105, 285, { align: 'center' });
+    }
+
+    doc.save(`reporte_${date}_${selectedGroup}.pdf`);
   };
 
   const presentCount = filteredAlumnos.filter(a => attendance[a.id] === 1).length;
@@ -562,8 +596,7 @@ function App() {
                 </button>
 
                 <button 
-                  onClick={handleSave}
-                  disabled={saveStatus === 'saving'}
+                  onClick={() => setShowConfirmModal(true)}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -778,9 +811,31 @@ function App() {
         {view === 'history' && (
           <div className="glass-container" style={{ padding: '32px', flex: 1, display: 'flex', flexDirection: 'column', gap: '24px', overflowY: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
+              <div style={{ marginBottom: '24px' }}>
                 <h3 style={{ fontSize: '24px', fontWeight: 600 }}>Registro Histórico</h3>
                 <p style={{ color: 'var(--text-secondary)' }}>Consulta de asistencias pasadas por mes y año</p>
+                
+                {/* Mini Dashboard de Historial */}
+                <div style={{ display: 'flex', gap: '24px', marginTop: '20px' }}>
+                  <div className="glass-card" style={{ flex: 1, padding: '20px', display: 'flex', alignItems: 'center', gap: '16px', background: 'rgba(34, 197, 94, 0.05)' }}>
+                    <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(34, 197, 94, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--success)' }}>
+                      <CheckCircle2 size={24} />
+                    </div>
+                    <div>
+                      <p style={{ fontSize: '24px', fontWeight: 700 }}>{historyData.filter(r => r.presente).length}</p>
+                      <p style={{ fontSize: '12px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Presentes Totales</p>
+                    </div>
+                  </div>
+                  <div className="glass-card" style={{ flex: 1, padding: '20px', display: 'flex', alignItems: 'center', gap: '16px', background: 'rgba(239, 68, 68, 0.05)' }}>
+                    <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(239, 68, 68, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--danger)' }}>
+                      <XCircle size={24} />
+                    </div>
+                    <div>
+                      <p style={{ fontSize: '24px', fontWeight: 700 }}>{historyData.filter(r => !r.presente).length}</p>
+                      <p style={{ fontSize: '12px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Inasistencias Totales</p>
+                    </div>
+                  </div>
+                </div>
               </div>
               <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                 <input 
@@ -1015,6 +1070,49 @@ function App() {
           background-color: transparent;
         }
       `}</style>
+
+      {/* Confirmation Modal */}
+      <AnimatePresence>
+        {showConfirmModal && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, backdropFilter: 'blur(4px)' }}>
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="glass-container" 
+              style={{ width: '400px', padding: '32px', textAlign: 'center' }}
+            >
+              <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(99, 102, 241, 0.1)', color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+                <AlertCircle size={32} />
+              </div>
+              <h3 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '8px' }}>Confirmar Asistencia</h3>
+              <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>
+                ¿Estás seguro de registrar la asistencia del día <strong>{date}</strong> para <strong>{selectedGroup}</strong>?
+                <br />
+                <br />
+                <strong>{presentCount}</strong> Presentes
+                <br />
+                <strong>{filteredAlumnos.length - presentCount}</strong> Inasistencias
+              </p>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button 
+                  onClick={() => setShowConfirmModal(false)}
+                  className="glass-card" 
+                  style={{ flex: 1, padding: '12px', background: 'white' }}
+                >
+                  Cancelar
+                </button>
+                <button 
+                  onClick={handleSave}
+                  style={{ flex: 1, padding: '12px', background: 'var(--accent-primary)', color: 'white', fontWeight: 600 }}
+                >
+                  Confirmar y Guardar
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

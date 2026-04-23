@@ -35,15 +35,17 @@ if (isProduction) {
             
             return {
                 get: async (...params) => {
-                    const res = await sql(pgQuery, params);
-                    return res[0];
+                    // Use sql.query for conventional parameter passing
+                    const res = await sql.query(pgQuery, params);
+                    return res.rows[0];
                 },
                 all: async (...params) => {
-                    return await sql(pgQuery, params);
+                    const res = await sql.query(pgQuery, params);
+                    return res.rows;
                 },
                 run: async (...params) => {
-                    const res = await sql(pgQuery, params);
-                    return { lastInsertRowid: res[0]?.id || null, changes: res.length };
+                    const res = await sql.query(pgQuery, params);
+                    return { lastInsertRowid: res.rows[0]?.id || null, changes: res.rowCount };
                 }
             };
         },
