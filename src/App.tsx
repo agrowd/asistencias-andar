@@ -16,8 +16,7 @@ import {
   LogOut,
   Lock,
   User as UserIcon,
-  AlertCircle,
-  Info
+  AlertCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as XLSX from 'xlsx';
@@ -49,7 +48,6 @@ function App() {
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [historyStats, setHistoryStats] = useState({ present: 0, absent: 0 });
   const [loginError, setLoginError] = useState('');
   const [historyData, setHistoryData] = useState<any[]>([]);
   const [historyFilter, setHistoryFilter] = useState({ month: new Date().getMonth() + 1, year: new Date().getFullYear() });
