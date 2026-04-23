@@ -34,16 +34,16 @@ if (isProduction) {
             
             return {
                 get: async (...params) => {
-                    const res = await sql.query(pgQuery, params);
-                    return res.rows[0];
+                    const rows = await sql(pgQuery, params);
+                    return rows[0];
                 },
                 all: async (...params) => {
-                    const res = await sql.query(pgQuery, params);
-                    return res.rows;
+                    const rows = await sql(pgQuery, params);
+                    return rows;
                 },
                 run: async (...params) => {
-                    const res = await sql.query(pgQuery, params);
-                    return { lastInsertRowid: res.rows[0]?.id || null, changes: res.rowCount };
+                    const rows = await sql(pgQuery, params);
+                    return { lastInsertRowid: rows[0]?.id || null, changes: rows.length };
                 }
             };
         },
