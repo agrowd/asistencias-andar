@@ -46,7 +46,7 @@ function App() {
   const [attendance, setAttendance] = useState<AsistenciaState>({});
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [view, setView] = useState<'attendance' | 'reports' | 'students' | 'users' | 'history'>('attendance');
+  const [view, setView] = useState<'attendance' | 'reports' | 'students' | 'users' | 'history' | 'monthly'>('attendance');
   const [stats, setStats] = useState<any>(null);
   const [criticalAlumnos, setCriticalAlumnos] = useState<any[]>([]);
   const [usersList, setUsersList] = useState<any[]>([]);
