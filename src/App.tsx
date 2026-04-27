@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 
@@ -1177,26 +1178,75 @@ function App() {
                   {[2024, 2025, 2026].map(y => <option key={y} value={y}>{y}</option>)}
                 </select>
                 <button 
-                  onClick={() => {
+                  onClick={async () => {
                     const daysInMonth = new Date(historyFilter.year, historyFilter.month, 0).getDate();
                     const targetAlumnos = monthlyGroupFilter === 'Todos' 
                       ? alumnos 
                       : alumnos.filter(a => a.grupo === monthlyGroupFilter);
 
-                    const headers = ['Alumno', 'Grupo', ...Array.from({ length: daysInMonth }, (_, i) => i + 1)];
-                    const rows = targetAlumnos.map(a => {
-                      const row: any[] = [`${a.apellido} ${a.nombre}`, a.grupo];
+                    const workbook = new ExcelJS.Workbook();
+                    const worksheet = workbook.addWorksheet('Planilla');
+
+                    // Setup Columns
+                    const columns = [
+                      { header: 'Alumno', key: 'name', width: 30 },
+                      { header: 'Grupo', key: 'group', width: 20 },
+                      ...Array.from({ length: daysInMonth }, (_, i) => ({
+                        header: (i + 1).toString(),
+                        key: `day_${i + 1}`,
+                        width: 4
+                      }))
+                    ];
+                    worksheet.columns = columns;
+
+                    // Add Rows and Style Cells
+                    targetAlumnos.forEach(a => {
+                      const rowData: any = { name: `${a.apellido} ${a.nombre}`, group: a.grupo };
                       for (let d = 1; d <= daysInMonth; d++) {
                         const dateStr = `${historyFilter.year}-${historyFilter.month.toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
                         const record = historyData.find(r => r.alumno_id === a.id && r.fecha === dateStr);
-                        row.push(record ? (record.presente === 1 ? 'P' : record.presente === 2 ? 'J' : 'A') : '-');
+                        rowData[`day_${d}`] = record ? (record.presente === 1 ? 'P' : record.presente === 2 ? 'J' : 'A') : '-';
                       }
-                      return row;
+                      const row = worksheet.addRow(rowData);
+
+                      // Style individual day cells
+                      for (let d = 1; d <= daysInMonth; d++) {
+                        const cell = row.getCell(`day_${d}`);
+                        const val = cell.value;
+                        
+                        cell.alignment = { horizontal: 'center' };
+                        
+                        if (val === 'P') {
+                          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDCFCE7' } }; // Light Green
+                          cell.font = { color: { argb: 'FF166534' }, bold: true }; // Dark Green
+                        } else if (val === 'A') {
+                          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEE2E2' } }; // Light Red
+                          cell.font = { color: { argb: 'FF991B1B' }, bold: true }; // Dark Red
+                        } else if (val === 'J') {
+                          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF7ED' } }; // Light Orange
+                          cell.font = { color: { argb: 'FF9A3412' }, bold: true }; // Dark Orange
+                        } else {
+                          cell.font = { color: { argb: 'FF94A3B8' } }; // Slate 400
+                        }
+                      }
                     });
-                    const workbook = XLSX.utils.book_new();
-                    const worksheet = XLSX.utils.aoa_to_sheet([headers, ...rows]);
-                    XLSX.utils.book_append_sheet(workbook, worksheet, "Planilla");
-                    XLSX.writeFile(workbook, `planilla_${monthlyGroupFilter}_${historyFilter.year}_${historyFilter.month}.xlsx`);
+
+                    // Style Header
+                    const headerRow = worksheet.getRow(1);
+                    headerRow.font = { bold: true };
+                    headerRow.alignment = { horizontal: 'center' };
+                    headerRow.eachCell(cell => {
+                      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF1F5F9' } }; // Light Slate
+                    });
+
+                    // Export
+                    const buffer = await workbook.xlsx.writeBuffer();
+                    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `planilla_${monthlyGroupFilter}_${historyFilter.year}_${historyFilter.month}.xlsx`;
+                    link.click();
                   }}
                   className="glass-card" 
                   style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '8px' }}
