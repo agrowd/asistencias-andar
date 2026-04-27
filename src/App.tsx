@@ -809,11 +809,11 @@ function App() {
               })}
               {criticalAlumnos.length === 0 && <p style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>No hay alumnos con faltas críticas este mes.</p>}
             </div>
-          </div>
         )}
 
         {view === 'students' && (
           <div className="glass-container" style={{ padding: '32px', flex: 1, overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
               <h3 style={{ fontSize: '24px', fontWeight: 600 }}>Gestión de Alumnos</h3>
               <button 
                 onClick={() => {
