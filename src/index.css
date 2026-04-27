@@ -90,37 +90,71 @@ button:active {
   transform: scale(0.95);
 }
 
-/* Responsive */
+/* Mobile Adjustments */
 @media (max-width: 1024px) {
   .app-layout {
     flex-direction: column !important;
+    padding: 12px !important;
+    gap: 12px !important;
     height: auto !important;
-    overflow-y: auto;
+    min-height: 100vh;
   }
   
-  aside {
-    width: 100% !important;
-    max-height: none !important;
+  .sidebar-nav {
+    position: fixed !important;
+    top: 0;
+    left: -320px;
+    width: 300px !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    z-index: 1500;
+    border-radius: 0 20px 20px 0 !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    box-shadow: 20px 0 50px rgba(0,0,0,0.1) !important;
+    visibility: hidden;
   }
   
+  .sidebar-nav.active {
+    left: 0;
+    visibility: visible;
+  }
+
+  .mobile-only {
+    display: flex !important;
+  }
+
   main {
+    padding-top: 60px;
     width: 100% !important;
   }
 
   .glass-container {
-    padding: 16px !important;
+    padding: 20px !important;
+  }
+
+  .stats-bar {
+    flex-direction: column;
+    align-items: flex-start !important;
   }
 }
 
 @media (max-width: 640px) {
   .glass-container {
-    border-radius: 12px;
+    padding: 16px !important;
   }
   
-  h1 { font-size: 20px !important; }
-  h2 { font-size: 18px !important; }
+  h3 { font-size: 20px !important; }
   
-  .dashboard-grid {
-    grid-template-columns: 1fr !important;
+  .table-responsive {
+    margin: 0 -16px;
+    padding: 0 16px;
+  }
+
+  input, select, button {
+    width: 100%;
+  }
+
+  .glass-card {
+    padding: 12px !important;
   }
 }

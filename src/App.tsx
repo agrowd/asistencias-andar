@@ -14,10 +14,11 @@ import {
   Download,
   History,
   LogOut,
-  Lock,
   User as UserIcon,
   AlertCircle,
-  TableProperties
+  TableProperties,
+  Menu,
+  X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as XLSX from 'xlsx';
@@ -52,6 +53,8 @@ function App() {
   const [usersList, setUsersList] = useState<any[]>([]);
   const [user, setUser] = useState<any>(null);
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+  const [showSidebar, setShowSidebar] = useState(false);
+  const [monthlyGroupFilter, setMonthlyGroupFilter] = useState('Todos');
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [loginError, setLoginError] = useState('');
@@ -489,17 +492,40 @@ function App() {
   }
 
   return (
-    <div className="app-layout" style={{ display: 'flex', height: '100vh', padding: '24px', gap: '24px' }}>
+    <div className={`app-layout ${showSidebar ? 'sidebar-open' : ''}`} style={{ display: 'flex', height: '100vh', padding: '24px', gap: '24px', position: 'relative' }}>
       
+      {/* Mobile Toggle */}
+      <button 
+        onClick={() => setShowSidebar(!showSidebar)}
+        className="glass-card mobile-only"
+        style={{
+          position: 'fixed',
+          top: '20px',
+          right: '20px',
+          zIndex: 2000,
+          width: '50px',
+          height: '50px',
+          display: 'none', // Controlled by CSS
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'var(--accent-primary)',
+          color: 'white',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+        }}
+      >
+        {showSidebar ? <X size={24} /> : <Menu size={24} />}
+      </button>
+
       {/* Sidebar - Navigation */}
-      <aside className="glass-container" style={{ 
+      <aside className={`glass-container sidebar-nav ${showSidebar ? 'active' : ''}`} style={{ 
         width: '300px', 
         padding: '24px', 
         display: 'flex', 
         flexDirection: 'column', 
         gap: '32px',
         maxHeight: 'calc(100vh - 48px)',
-        overflowY: 'auto'
+        overflowY: 'auto',
+        transition: 'all 0.3s ease'
       }}>
         <header>
           <h1 style={{ fontSize: '24px', fontWeight: 700, background: 'linear-gradient(to right, #6366f1, #a855f7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: '4px' }}>
@@ -521,7 +547,10 @@ function App() {
           ].filter(Boolean).map((item: any) => (
             <button
               key={item.id}
-              onClick={() => setView(item.id as any)}
+              onClick={() => {
+                setView(item.id as any);
+                setShowSidebar(false);
+              }}
               className="glass-card"
               style={{
                 display: 'flex',
@@ -609,13 +638,13 @@ function App() {
       </aside>
 
       {/* Main Content */}
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '24px', maxWidth: '100%', overflowX: 'hidden' }}>
         
         {/* View Switcher */}
         {view === 'attendance' && (
-          <>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             {/* Top Stats & Actions bar */}
-            <div className="glass-container" style={{ padding: '20px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div className="glass-container stats-bar" style={{ padding: '20px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <h2 style={{ fontSize: '20px', fontWeight: 600 }}>{selectedGroup}</h2>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -1101,12 +1130,22 @@ function App() {
 
         {view === 'monthly' && (
           <div className="glass-container" style={{ padding: '32px', flex: 1, display: 'flex', flexDirection: 'column', gap: '24px', overflowY: 'auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
               <div>
                 <h3 style={{ fontSize: '24px', fontWeight: 600 }}>Planilla Mensual</h3>
                 <p style={{ color: 'var(--text-secondary)' }}>Vista de cuadrícula similar a Excel para control mensual</p>
               </div>
-              <div style={{ display: 'flex', gap: '12px' }}>
+              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                <select 
+                  className="glass-card" 
+                  value={monthlyGroupFilter}
+                  onChange={e => setMonthlyGroupFilter(e.target.value)}
+                  style={{ padding: '8px 16px', outline: 'none' }}
+                >
+                  <option value="Todos">Todos los Grupos</option>
+                  <option value="Centro de Día">Centro de Día</option>
+                  <option value="Emprendedores">Emprendedores</option>
+                </select>
                 <select 
                   className="glass-card" 
                   value={historyFilter.month}
@@ -1128,12 +1167,16 @@ function App() {
                 <button 
                   onClick={() => {
                     const daysInMonth = new Date(historyFilter.year, historyFilter.month, 0).getDate();
-                    const headers = ['Alumno', ...Array.from({ length: daysInMonth }, (_, i) => i + 1)];
-                    const rows = alumnos.map(a => {
-                      const row: any[] = [`${a.apellido} ${a.nombre}`];
+                    const targetAlumnos = monthlyGroupFilter === 'Todos' 
+                      ? alumnos 
+                      : alumnos.filter(a => a.grupo === monthlyGroupFilter);
+
+                    const headers = ['Alumno', 'Grupo', ...Array.from({ length: daysInMonth }, (_, i) => i + 1)];
+                    const rows = targetAlumnos.map(a => {
+                      const row: any[] = [`${a.apellido} ${a.nombre}`, a.grupo];
                       for (let d = 1; d <= daysInMonth; d++) {
                         const dateStr = `${historyFilter.year}-${historyFilter.month.toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
-                        const record = historyData.find(r => r.alumno_id === a.id && r.fecha === dateStr);
+                        const record = historyData.find(r => r.apellido === a.apellido && r.nombre === a.nombre && r.fecha === dateStr);
                         row.push(record ? (record.presente === 1 ? 'P' : record.presente === 2 ? 'J' : 'A') : '-');
                       }
                       return row;
@@ -1141,7 +1184,7 @@ function App() {
                     const workbook = XLSX.utils.book_new();
                     const worksheet = XLSX.utils.aoa_to_sheet([headers, ...rows]);
                     XLSX.utils.book_append_sheet(workbook, worksheet, "Planilla");
-                    XLSX.writeFile(workbook, `planilla_${historyFilter.year}_${historyFilter.month}.xlsx`);
+                    XLSX.writeFile(workbook, `planilla_${monthlyGroupFilter}_${historyFilter.year}_${historyFilter.month}.xlsx`);
                   }}
                   className="glass-card" 
                   style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '8px' }}
@@ -1151,8 +1194,8 @@ function App() {
               </div>
             </div>
 
-            <div style={{ overflowX: 'auto', flex: 1 }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+            <div className="table-responsive" style={{ overflowX: 'auto', flex: 1 }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', minWidth: '1000px' }}>
                 <thead>
                   <tr style={{ background: 'var(--accent-primary)', color: 'white' }}>
                     <th style={{ padding: '8px', border: '1px solid rgba(255,255,255,0.2)', position: 'sticky', left: 0, background: 'var(--accent-primary)', zIndex: 10 }}>Alumno</th>
@@ -1162,7 +1205,9 @@ function App() {
                   </tr>
                 </thead>
                 <tbody>
-                  {alumnos.map(a => (
+                  {alumnos
+                    .filter(a => monthlyGroupFilter === 'Todos' || a.grupo === monthlyGroupFilter)
+                    .map(a => (
                     <tr key={a.id}>
                       <td style={{ padding: '8px', border: '1px solid rgba(0,0,0,0.05)', fontWeight: 600, position: 'sticky', left: 0, background: 'white', zIndex: 5, whiteSpace: 'nowrap' }}>
                         {a.apellido}, {a.nombre}
