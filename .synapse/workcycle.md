@@ -16,10 +16,11 @@
 - [x] **Migración efectiva (SQLite -> Neon) - DONE**.
 - [x] **Despliegue en Vercel - DONE**.
 - [x] **Fix de Sesión y Manejo de Errores - DONE**.
-- [x] **Lógica de Asistencia: Ausente por Defecto - DONE**.
+- [x] **Lógica de Asistencia: Presente por Defecto (Logica Inversa) - DONE**.
 - [x] **Motivos de Justificación y Modal - DONE**.
 - [x] **Historial Separado por Grupos - DONE**.
 - **Acción**: Migración de DB (SQLite/Neon) para columna `observacion`.
+- **Acción**: Reversión a lógica inversa: Presente (1) por defecto.
 - **Acción**: Nuevo modal de justificación en el flujo de toggle.
 - **Acción**: Refactor de vista Historial con agrupamiento dinámico.
-- **Estado**: ✅ COMPLETADO. Versión 1.2 lista en producción.
+- **Estado**: ✅ COMPLETADO. Versión 1.2.1 lista en producción.

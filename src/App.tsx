@@ -267,15 +267,19 @@ function App() {
 
   const toggleAttendance = (id: number) => {
     setAttendance(prev => {
+      // Si es undefined, asumimos que es 1 (Presente) por defecto
       const currentState = prev[id] === undefined ? 1 : prev[id];
+      
       // Ciclo: 1 (Presente) -> 0 (Ausente) -> 2 (Justificado) -> 1
       let nextState = 1;
-      if (currentState === 1) nextState = 0;
-      else if (currentState === 0) {
-        nextState = 2;
+      if (currentState === 1) {
+        nextState = 0; // De presente a ausente (SIN MODAL)
+      } else if (currentState === 0) {
+        nextState = 2; // De ausente a justificado (CON MODAL)
         setShowJustifyModal({ show: true, alumnoId: id });
+      } else {
+        nextState = 1; // De justificado vuelve a presente
       }
-      else nextState = 1;
       
       return {
         ...prev,
@@ -396,7 +400,7 @@ function App() {
     doc.save(`reporte_${date}_${selectedGroup}.pdf`);
   };
 
-  const presentCount = filteredAlumnos.filter(a => attendance[a.id] === 1).length;
+  const presentCount = filteredAlumnos.filter(a => attendance[a.id] === 1 || attendance[a.id] === undefined).length;
 
   if (!user) {
     return (
@@ -678,8 +682,8 @@ function App() {
                           gap: '16px',
                           cursor: 'pointer',
                           border: '2px solid transparent',
-                          borderColor: attendance[alumno.id] === 1 ? 'var(--success)' : attendance[alumno.id] === 2 ? '#f59e0b' : 'transparent',
-                          background: attendance[alumno.id] === 1 ? 'rgba(34, 197, 94, 0.05)' : attendance[alumno.id] === 2 ? 'rgba(245, 158, 11, 0.05)' : 'rgba(255, 255, 255, 0.6)'
+                          borderColor: (attendance[alumno.id] === 1 || attendance[alumno.id] === undefined) ? 'var(--success)' : attendance[alumno.id] === 2 ? '#f59e0b' : 'var(--danger)',
+                          background: (attendance[alumno.id] === 1 || attendance[alumno.id] === undefined) ? 'rgba(34, 197, 94, 0.05)' : attendance[alumno.id] === 2 ? 'rgba(245, 158, 11, 0.05)' : 'rgba(239, 68, 68, 0.05)'
                         }}
                       >
                         <div style={{ 
@@ -707,7 +711,7 @@ function App() {
                         >
                           <p style={{ fontWeight: 600, fontSize: '16px' }}>{alumno.apellido}</p>
                           <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>{alumno.nombre}</p>
-                          {attendance[alumno.id] !== 1 && (attendance as any)[`prof_${alumno.id}`] && (
+                          {attendance[alumno.id] !== 1 && attendance[alumno.id] !== undefined && (attendance as any)[`prof_${alumno.id}`] && (
                             <p style={{ fontSize: '11px', color: attendance[alumno.id] === 2 ? '#d97706' : 'var(--danger)', fontWeight: 600, marginTop: '4px' }}>
                               {attendance[alumno.id] === 2 ? 'Justificó:' : 'Falta:'} {(attendance as any)[`prof_${alumno.id}`]}
                             </p>
@@ -721,10 +725,10 @@ function App() {
                           display: 'flex', 
                           alignItems: 'center', 
                           justifyContent: 'center',
-                          background: attendance[alumno.id] === 1 ? 'rgba(34, 197, 94, 0.1)' : attendance[alumno.id] === 2 ? 'rgba(245, 158, 11, 0.1)' : 'rgba(0,0,0,0.05)',
-                          color: attendance[alumno.id] === 1 ? 'var(--success)' : attendance[alumno.id] === 2 ? '#f59e0b' : 'var(--text-secondary)'
+                          background: (attendance[alumno.id] === 1 || attendance[alumno.id] === undefined) ? 'rgba(34, 197, 94, 0.1)' : attendance[alumno.id] === 2 ? 'rgba(245, 158, 11, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                          color: (attendance[alumno.id] === 1 || attendance[alumno.id] === undefined) ? 'var(--success)' : attendance[alumno.id] === 2 ? '#f59e0b' : 'var(--danger)'
                         }}>
-                          {attendance[alumno.id] === 1 ? <CheckCircle2 size={24} /> : attendance[alumno.id] === 2 ? <Calendar size={24} /> : <XCircle size={24} color="rgba(0,0,0,0.2)" />}
+                          {(attendance[alumno.id] === 1 || attendance[alumno.id] === undefined) ? <CheckCircle2 size={24} /> : attendance[alumno.id] === 2 ? <Calendar size={24} /> : <XCircle size={24} />}
                         </div>
                       </motion.div>
                     ))}
