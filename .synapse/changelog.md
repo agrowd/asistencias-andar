@@ -5,6 +5,15 @@
 - Vista de historial organizada y separada por grupos (Centro de Día / Emprendedores).
 - Migración de esquema en Neon PostgreSQL.
 
+## [1.2.2] - 2026-04-27
+### Fixed
+- JSX syntax errors in `App.tsx`.
+- Attendance flicker where students appeared absent on first load.
+### Added
+- "Reset Today to Present" button in attendance view.
+- Grouped view in Reports (matching History).
+- System version label in sidebar.
+
 ## [1.0.0] - 2026-04-27
 ### Added
 - Despliegue oficial en Vercel.

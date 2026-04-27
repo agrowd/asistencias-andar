@@ -763,8 +763,8 @@ function App() {
         )}
 
         {view === 'reports' && stats && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '24px' }}>
+          <>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '24px', marginBottom: '24px' }}>
               <div className="glass-container" style={{ padding: '24px' }}>
                 <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '8px' }}>Total Alumnos</p>
                 <h3 style={{ fontSize: '32px', fontWeight: 700 }}>{stats.totalAlumnos}</h3>
@@ -809,6 +809,7 @@ function App() {
               })}
               {criticalAlumnos.length === 0 && <p style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>No hay alumnos con faltas críticas este mes.</p>}
             </div>
+          </>
         )}
 
         {view === 'students' && (

@@ -6,7 +6,7 @@ Sistema de gestión de asistencias para la organización "Andar", migrando de un
 ## 🏗️ Arquitectura (Confirmed)
 - **Frontend**: Vite + React
 - **Backend**: Node.js + Express
-- **DB**: SQLite (`better-sqlite3`)
+- **DB**: SQLite (Local) / Neon PostgreSQL (Production)
 - **Aesthetics**: Premium Glassmorphism, Responsive.
 
 ## 📂 Estructura de Archivos Principal
