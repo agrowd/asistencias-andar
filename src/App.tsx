@@ -16,7 +16,8 @@ import {
   LogOut,
   Lock,
   User as UserIcon,
-  AlertCircle
+  AlertCircle,
+  TableProperties
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as XLSX from 'xlsx';
@@ -48,6 +49,7 @@ function App() {
   const [view, setView] = useState<'attendance' | 'reports' | 'students' | 'users' | 'history'>('attendance');
   const [stats, setStats] = useState<any>(null);
   const [criticalAlumnos, setCriticalAlumnos] = useState<any[]>([]);
+  const [usersList, setUsersList] = useState<any[]>([]);
   const [user, setUser] = useState<any>(null);
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
@@ -70,15 +72,13 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (!user) return;
-    fetchAlumnos();
-    if (view === 'reports' && user.rol === 'admin') {
-      fetchStats();
+    if (token) {
+      fetchAlumnos();
+      if (view === 'reports' || view === 'attendance') fetchStats();
+      if (view === 'history') fetchHistory();
+      if (view === 'users') fetchUsers();
     }
-    if (view === 'history') {
-      fetchHistory();
-    }
-  }, [view, user]);
+  }, [token, view, historyFilter.month, historyFilter.year]);
 
   useEffect(() => {
     fetchAttendanceForDate();
@@ -144,6 +144,19 @@ function App() {
     }
   };
 
+  const fetchUsers = async () => {
+    if (!token || user.rol !== 'admin') return;
+    try {
+      const res = await fetch('/api/usuarios', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await handleResponse(res);
+      if (data) setUsersList(data);
+    } catch (err) {
+      console.error('Failed to fetch users', err);
+    }
+  };
+
   const fetchHistory = async () => {
     try {
       const res = await fetch(`/api/asistencias/history?month=${historyFilter.month}&year=${historyFilter.year}`, {
@@ -195,10 +208,12 @@ function App() {
       if (data) {
         setModal({ type: null });
         setUserForm({ username: '', password: '', rol: 'profe' });
+        fetchUsers();
         alert('Usuario guardado con éxito');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to add user', err);
+      alert('Error al guardar usuario: ' + err.message);
     }
   };
 
@@ -499,6 +514,7 @@ function App() {
           {[
             { id: 'attendance', label: 'Asistencias', icon: CheckCircle2 },
             { id: 'history', label: 'Historial', icon: History },
+            { id: 'monthly', label: 'Sábana Mensual', icon: TableProperties },
             user.rol === 'admin' && { id: 'reports', label: 'Reportes', icon: BarChart3 },
             user.rol === 'admin' && { id: 'students', label: 'Alumnos', icon: Users },
             user.rol === 'admin' && { id: 'users', label: 'Usuarios', icon: UserIcon },
@@ -1027,7 +1043,7 @@ function App() {
         )}
 
         {view === 'users' && user.rol === 'admin' && (
-          <div className="glass-container" style={{ padding: '32px', flex: 1, display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div className="glass-container" style={{ padding: '32px', flex: 1, display: 'flex', flexDirection: 'column', gap: '24px', overflowY: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <h3 style={{ fontSize: '24px', fontWeight: 600 }}>Administración de Profesores</h3>
@@ -1043,7 +1059,135 @@ function App() {
                 <Plus size={18} /> Nuevo Profesor
               </button>
             </div>
-            <p style={{ color: 'var(--text-secondary)' }}>Los profesores creados podrán usar sus credenciales para cargar asistencias en el módulo correspondiente.</p>
+
+            <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 8px' }}>
+              <thead>
+                <tr style={{ textAlign: 'left', color: 'var(--text-secondary)', fontSize: '14px' }}>
+                  <th style={{ padding: '12px 24px' }}>Usuario</th>
+                  <th style={{ padding: '12px 24px' }}>Rol</th>
+                  <th style={{ padding: '12px 24px', textAlign: 'right' }}>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {usersList.map(u => (
+                  <tr key={u.id} className="glass-card">
+                    <td style={{ padding: '16px 24px', fontWeight: 600 }}>{u.username}</td>
+                    <td style={{ padding: '16px 24px' }}>{u.rol === 'admin' ? 'Administrador' : 'Profesor'}</td>
+                    <td style={{ padding: '16px 24px', textAlign: 'right' }}>
+                      {u.username !== 'admin' && (
+                        <button 
+                          onClick={async () => {
+                            if (confirm('¿Eliminar usuario?')) {
+                              const res = await fetch(`/api/usuarios/${u.id}`, {
+                                method: 'DELETE',
+                                headers: { 'Authorization': `Bearer ${token}` }
+                              });
+                              const data = await handleResponse(res);
+                              if (data) fetchUsers();
+                            }
+                          }}
+                          style={{ padding: '8px', color: 'var(--danger)', background: 'transparent' }}
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {view === 'monthly' && (
+          <div className="glass-container" style={{ padding: '32px', flex: 1, display: 'flex', flexDirection: 'column', gap: '24px', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h3 style={{ fontSize: '24px', fontWeight: 600 }}>Planilla Mensual</h3>
+                <p style={{ color: 'var(--text-secondary)' }}>Vista de cuadrícula similar a Excel para control mensual</p>
+              </div>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <select 
+                  className="glass-card" 
+                  value={historyFilter.month}
+                  onChange={e => setHistoryFilter({...historyFilter, month: parseInt(e.target.value)})}
+                  style={{ padding: '8px 16px', outline: 'none' }}
+                >
+                  {Array.from({ length: 12 }, (_, i) => (
+                    <option key={i+1} value={i+1}>{new Date(0, i).toLocaleString('es', { month: 'long' })}</option>
+                  ))}
+                </select>
+                <select 
+                  className="glass-card" 
+                  value={historyFilter.year}
+                  onChange={e => setHistoryFilter({...historyFilter, year: parseInt(e.target.value)})}
+                  style={{ padding: '8px 16px', outline: 'none' }}
+                >
+                  {[2024, 2025, 2026].map(y => <option key={y} value={y}>{y}</option>)}
+                </select>
+                <button 
+                  onClick={() => {
+                    const daysInMonth = new Date(historyFilter.year, historyFilter.month, 0).getDate();
+                    const headers = ['Alumno', ...Array.from({ length: daysInMonth }, (_, i) => i + 1)];
+                    const rows = alumnos.map(a => {
+                      const row: any[] = [`${a.apellido} ${a.nombre}`];
+                      for (let d = 1; d <= daysInMonth; d++) {
+                        const dateStr = `${historyFilter.year}-${historyFilter.month.toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
+                        const record = historyData.find(r => r.alumno_id === a.id && r.fecha === dateStr);
+                        row.push(record ? (record.presente === 1 ? 'P' : record.presente === 2 ? 'J' : 'A') : '-');
+                      }
+                      return row;
+                    });
+                    const workbook = XLSX.utils.book_new();
+                    const worksheet = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+                    XLSX.utils.book_append_sheet(workbook, worksheet, "Planilla");
+                    XLSX.writeFile(workbook, `planilla_${historyFilter.year}_${historyFilter.month}.xlsx`);
+                  }}
+                  className="glass-card" 
+                  style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '8px' }}
+                >
+                  <Download size={16} /> Exportar Excel
+                </button>
+              </div>
+            </div>
+
+            <div style={{ overflowX: 'auto', flex: 1 }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+                <thead>
+                  <tr style={{ background: 'var(--accent-primary)', color: 'white' }}>
+                    <th style={{ padding: '8px', border: '1px solid rgba(255,255,255,0.2)', position: 'sticky', left: 0, background: 'var(--accent-primary)', zIndex: 10 }}>Alumno</th>
+                    {Array.from({ length: new Date(historyFilter.year, historyFilter.month, 0).getDate() }, (_, i) => (
+                      <th key={i} style={{ padding: '4px', border: '1px solid rgba(255,255,255,0.2)', width: '30px' }}>{i + 1}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {alumnos.map(a => (
+                    <tr key={a.id}>
+                      <td style={{ padding: '8px', border: '1px solid rgba(0,0,0,0.05)', fontWeight: 600, position: 'sticky', left: 0, background: 'white', zIndex: 5, whiteSpace: 'nowrap' }}>
+                        {a.apellido}, {a.nombre}
+                      </td>
+                      {Array.from({ length: new Date(historyFilter.year, historyFilter.month, 0).getDate() }, (_, i) => {
+                        const dateStr = `${historyFilter.year}-${historyFilter.month.toString().padStart(2, '0')}-${(i + 1).toString().padStart(2, '0')}`;
+                        const record = historyData.find(r => r.apellido === a.apellido && r.nombre === a.nombre && r.fecha === dateStr);
+                        let color = 'transparent';
+                        let text = '-';
+                        if (record) {
+                          if (record.presente === 1) { color = 'rgba(34, 197, 94, 0.1)'; text = 'P'; }
+                          else if (record.presente === 2) { color = 'rgba(245, 158, 11, 0.1)'; text = 'J'; }
+                          else { color = 'rgba(239, 68, 68, 0.1)'; text = 'A'; }
+                        }
+                        return (
+                          <td key={i} style={{ padding: '4px', border: '1px solid rgba(0,0,0,0.05)', textAlign: 'center', background: color, fontWeight: text !== '-' ? 700 : 400 }}>
+                            {text}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 
