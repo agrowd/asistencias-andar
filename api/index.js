@@ -211,7 +211,7 @@ app.get('/api/asistencias/history', authenticateToken, async (req, res) => {
         query += " ORDER BY asist.fecha DESC, al.apellido ASC";
         
         const history = await db.prepare(query).all(...params);
-        res.json(history.map(h => ({ ...h, alumno_id: h.id }))); // Ensure alumno_id is explicit if needed
+        res.json(history);
     } catch (error) {
         console.error('History error:', error);
         res.status(500).json({ error: 'Internal Server Error' });
