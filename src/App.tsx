@@ -264,6 +264,13 @@ function App() {
       console.error('Failed to fetch attendance', err);
     }
   };
+  const resetAttendanceToPresent = () => {
+    const newState: AsistenciaState = {};
+    alumnos.forEach(a => {
+      newState[a.id] = 1;
+    });
+    setAttendance(newState);
+  };
 
   const toggleAttendance = (id: number) => {
     setAttendance(prev => {
@@ -480,10 +487,11 @@ function App() {
         overflowY: 'auto'
       }}>
         <header>
-          <h1 style={{ fontSize: '24px', fontWeight: 700, background: 'linear-gradient(to right, #6366f1, #a855f7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: '8px' }}>
+          <h1 style={{ fontSize: '24px', fontWeight: 700, background: 'linear-gradient(to right, #6366f1, #a855f7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: '4px' }}>
             Andar
           </h1>
-          <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Control de Asistencias</p>
+          <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '4px' }}>Control de Asistencias</p>
+          <p style={{ fontSize: '10px', color: 'rgba(0,0,0,0.3)', fontWeight: 600 }}>v1.2.2 - Ariadne v5.0</p>
         </header>
 
         <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -594,9 +602,17 @@ function App() {
             <div className="glass-container" style={{ padding: '20px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <h2 style={{ fontSize: '20px', fontWeight: 600 }}>{selectedGroup}</h2>
-                <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
-                  {presentCount} presentes / {filteredAlumnos.length} alumnos
-                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
+                    {presentCount} presentes / {filteredAlumnos.length} alumnos
+                  </p>
+                  <button 
+                    onClick={resetAttendanceToPresent}
+                    style={{ fontSize: '11px', background: 'rgba(34, 197, 94, 0.1)', color: 'var(--success)', padding: '2px 8px', borderRadius: '4px', border: '1px solid rgba(34, 197, 94, 0.2)' }}
+                  >
+                    Reiniciar hoy a Presentes
+                  </button>
+                </div>
               </div>
 
               <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
@@ -798,7 +814,6 @@ function App() {
 
         {view === 'students' && (
           <div className="glass-container" style={{ padding: '32px', flex: 1, overflowY: 'auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
               <h3 style={{ fontSize: '24px', fontWeight: 600 }}>Gestión de Alumnos</h3>
               <button 
                 onClick={() => {
