@@ -61,7 +61,6 @@ function App() {
   const [studentHistory, setStudentHistory] = useState<any[]>([]);
   const [observations, setObservations] = useState<ObservationState>({});
   const [showJustifyModal, setShowJustifyModal] = useState<{ show: boolean, alumnoId: number | null }>({ show: false, alumnoId: null });
-  const [reportFilter, setReportFilter] = useState<string>('Centro de Día');
 
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
