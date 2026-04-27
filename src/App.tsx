@@ -239,6 +239,9 @@ function App() {
       const data = await handleResponse(res);
       if (!data) return;
 
+      const newState: AsistenciaState = {};
+      const newObs: ObservationState = {};
+
       // VOLVEMOS A LOGICA INVERSA: Todos presentes por defecto (1)
       alumnos.forEach(a => {
         newState[a.id] = 1;
