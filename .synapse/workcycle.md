@@ -14,8 +14,10 @@
 - [x] Configuración de vercel.json.
 - [x] Actualización de URLs en Frontend.
 - [x] **Migración efectiva (SQLite -> Neon) - DONE**.
-- [ ] **Despliegue en Vercel - PENDING**.
+- [x] **Despliegue en Vercel - DONE**.
+- [x] **Fix de Sesión y Manejo de Errores - DONE**.
 - **Acción**: Fix de URL hardcodeada en App.tsx.
 - **Acción**: Movidas dependencias críticas (express, cors) a `dependencies`.
-- **Acción**: Push a GitHub realizado.
-- **Estado**: 🟢 ACTIVE. Ready for Vercel deployment.
+- **Acción**: Implementación de `handleResponse` para auto-logout en 401/403.
+- **Acción**: Push final a GitHub realizado.
+- **Estado**: ✅ COMPLETADO. Sistema en producción estable.

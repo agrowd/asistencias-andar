@@ -234,15 +234,15 @@ function App() {
       if (!data) return;
 
       const newState: AsistenciaState = {};
-      // LOGICA INVERSA: Todos presentes por defecto (1)
+      // POR DEFECTO: Todos ausentes (0)
       alumnos.forEach(a => {
-        newState[a.id] = 1;
+        newState[a.id] = 0;
       });
       
       // Si hay registro en DB, sobreescribimos con la realidad guardada
       if (data && data.length > 0) {
         data.forEach((a: any) => {
-          newState[a.alumno_id] = a.presente; // Now expected to be 0, 1, 2
+          newState[a.alumno_id] = a.presente; // 0, 1, 2
           if (a.profesor_nombre) {
             (newState as any)[`prof_${a.alumno_id}`] = a.profesor_nombre;
           }
@@ -257,12 +257,12 @@ function App() {
 
   const toggleAttendance = (id: number) => {
     setAttendance(prev => {
-      const currentState = prev[id] === undefined ? 1 : prev[id];
-      // Ciclo: 1 (Presente) -> 0 (Ausente) -> 2 (Justificado) -> 1
-      let nextState = 1;
-      if (currentState === 1) nextState = 0;
-      else if (currentState === 0) nextState = 2;
-      else nextState = 1;
+      const currentState = prev[id] === undefined ? 0 : prev[id];
+      // Ciclo: 0 (Ausente) -> 1 (Presente) -> 2 (Justificado) -> 0
+      let nextState = 0;
+      if (currentState === 0) nextState = 1;
+      else if (currentState === 1) nextState = 2;
+      else nextState = 0;
       
       return {
         ...prev,
