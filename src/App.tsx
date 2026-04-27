@@ -796,13 +796,15 @@ function App() {
                   </AnimatePresence>
                 </div>
               )}
-            {!loading && filteredAlumnos.length === 0 && (
+
+              {!loading && filteredAlumnos.length === 0 && (
                 <div style={{ textAlign: 'center', padding: '100px', color: 'var(--text-secondary)' }}>
                   <Users size={64} style={{ opacity: 0.2, marginBottom: '16px' }} />
                   <p>No se encontraron alumnos en este grupo.</p>
                 </div>
               )}
             </div>
+          </div>
         )}
 
         {view === 'reports' && stats && (
