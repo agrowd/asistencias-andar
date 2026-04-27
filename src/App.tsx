@@ -646,14 +646,15 @@ function App() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             {/* Top Stats & Actions bar */}
             <div className="glass-container stats-bar" style={{ padding: '20px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <div style={{ display: 'flex', flexDirection: 'column' }} className="stats-info">
                 <h2 style={{ fontSize: '20px', fontWeight: 600 }}>{selectedGroup}</h2>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                   <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
                     {presentCount} presentes / {filteredAlumnos.length} alumnos
                   </p>
                   <button 
                     onClick={resetAttendanceToPresent}
+                    className="reset-button"
                     style={{ fontSize: '11px', background: 'rgba(34, 197, 94, 0.1)', color: 'var(--success)', padding: '2px 8px', borderRadius: '4px', border: '1px solid rgba(34, 197, 94, 0.2)' }}
                   >
                     Reiniciar hoy a Presentes
@@ -661,8 +662,8 @@ function App() {
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                <div style={{ position: 'relative' }}>
+              <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }} className="actions-group">
+                <div style={{ position: 'relative', flex: 1 }} className="search-container">
                   <Filter size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
                   <input 
                     type="text" 
@@ -674,7 +675,8 @@ function App() {
                       borderRadius: '12px',
                       border: '1px solid rgba(0,0,0,0.1)',
                       background: 'rgba(255,255,255,0.8)',
-                      width: '240px',
+                      width: '100%',
+                      maxWidth: '240px',
                       fontFamily: 'inherit'
                     }}
                   />

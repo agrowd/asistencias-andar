@@ -134,7 +134,46 @@ button:active {
 
   .stats-bar {
     flex-direction: column;
-    align-items: flex-start !important;
+    align-items: stretch !important;
+    gap: 20px !important;
+    padding: 16px !important;
+  }
+
+  .stats-bar > div {
+    width: 100% !important;
+    justify-content: space-between;
+  }
+
+  .stats-bar input {
+    width: 100% !important;
+  }
+
+  .stats-bar .actions-group {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px !important;
+    width: 100%;
+  }
+
+  .stats-bar .search-container {
+    grid-column: span 2;
+  }
+
+  .stats-bar .actions-group button {
+    width: 100% !important;
+    justify-content: center;
+  }
+
+  .stats-bar .actions-group button:last-child {
+    grid-column: span 2;
+    padding: 16px !important;
+  }
+
+  .stats-bar .reset-button {
+    width: 100% !important;
+    padding: 8px !important;
+    margin-top: 8px;
+    font-size: 13px !important;
   }
 }
 
