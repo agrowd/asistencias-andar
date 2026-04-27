@@ -33,6 +33,10 @@ interface Alumno {
 interface AsistenciaState {
   [key: number]: number; // 0: Absent, 1: Present, 2: Justified
 }
+
+interface ObservationState {
+  [key: number]: string;
+}
 function App() {
   const [alumnos, setAlumnos] = useState<Alumno[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,6 +59,8 @@ function App() {
   const [studentForm, setStudentForm] = useState({ nombre: '', apellido: '', grupo: 'Centro de Día' });
   const [userForm, setUserForm] = useState({ username: '', password: '', rol: 'profe' });
   const [studentHistory, setStudentHistory] = useState<any[]>([]);
+  const [observations, setObservations] = useState<ObservationState>({});
+  const [showJustifyModal, setShowJustifyModal] = useState<{ show: boolean, alumnoId: number | null }>({ show: false, alumnoId: null });
 
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
@@ -234,6 +240,7 @@ function App() {
       if (!data) return;
 
       const newState: AsistenciaState = {};
+      const newObs: ObservationState = {};
       // POR DEFECTO: Todos ausentes (0)
       alumnos.forEach(a => {
         newState[a.id] = 0;
@@ -243,6 +250,7 @@ function App() {
       if (data && data.length > 0) {
         data.forEach((a: any) => {
           newState[a.alumno_id] = a.presente; // 0, 1, 2
+          if (a.observacion) newObs[a.alumno_id] = a.observacion;
           if (a.profesor_nombre) {
             (newState as any)[`prof_${a.alumno_id}`] = a.profesor_nombre;
           }
@@ -250,6 +258,7 @@ function App() {
       }
       
       setAttendance(newState);
+      setObservations(newObs);
     } catch (err) {
       console.error('Failed to fetch attendance', err);
     }
@@ -261,7 +270,10 @@ function App() {
       // Ciclo: 0 (Ausente) -> 1 (Presente) -> 2 (Justificado) -> 0
       let nextState = 0;
       if (currentState === 0) nextState = 1;
-      else if (currentState === 1) nextState = 2;
+      else if (currentState === 1) {
+        nextState = 2;
+        setShowJustifyModal({ show: true, alumnoId: id });
+      }
       else nextState = 0;
       
       return {
@@ -277,10 +289,13 @@ function App() {
     try {
       const payload = {
         date,
-        asistencias: Object.entries(attendance).map(([id, present]) => ({
-          alumno_id: parseInt(id),
-          presente: present
-        }))
+        asistencias: Object.entries(attendance)
+          .filter(([id]) => !id.startsWith('prof_'))
+          .map(([id, present]) => ({
+            alumno_id: parseInt(id),
+            presente: present,
+            observacion: observations[parseInt(id)] || null
+          }))
       };
 
       const res = await fetch('/api/asistencias', {
@@ -916,46 +931,66 @@ function App() {
               </div>
             </div>
 
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 8px' }}>
-                <thead>
-                  <tr style={{ textAlign: 'left', color: 'var(--text-secondary)', fontSize: '14px' }}>
-                    <th style={{ padding: '12px 24px' }}>Fecha</th>
-                    <th style={{ padding: '12px 24px' }}>Alumno</th>
-                    <th style={{ padding: '12px 24px' }}>Grupo</th>
-                    <th style={{ padding: '12px 24px' }}>Estado</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {historyData.map((row, idx) => (
-                    <tr key={idx} className="glass-card">
-                      <td style={{ padding: '16px 24px' }}>{row.fecha}</td>
-                      <td style={{ padding: '16px 24px', fontWeight: 600 }}>{row.apellido}, {row.nombre}</td>
-                      <td style={{ padding: '16px 24px' }}>{row.grupo}</td>
-                      <td style={{ padding: '16px 24px' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                          <span style={{ 
-                            padding: '4px 12px', 
-                            borderRadius: '20px', 
-                            fontSize: '12px', 
-                            fontWeight: 700,
-                            width: 'fit-content',
-                            background: row.presente === 1 ? 'rgba(34, 197, 94, 0.1)' : row.presente === 2 ? 'rgba(245, 158, 11, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                            color: row.presente === 1 ? 'var(--success)' : row.presente === 2 ? '#f59e0b' : 'var(--danger)'
-                          }}>
-                            {row.presente === 1 ? 'PRESENTE' : row.presente === 2 ? 'JUSTIFICADO' : 'AUSENTE'}
-                          </span>
-                          {row.presente !== 1 && row.profesor_nombre && (
-                            <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>
-                              {row.presente === 2 ? 'Justificó:' : 'Falta:'} {row.profesor_nombre}
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+              {['Centro de Día', 'Emprendedores'].map(groupName => {
+                const groupData = historyData.filter(r => r.grupo === groupName);
+                if (groupData.length === 0) return null;
+                
+                return (
+                  <div key={groupName} className="glass-container" style={{ padding: '24px', background: 'rgba(255,255,255,0.4)' }}>
+                    <h4 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--accent-primary)' }}>
+                      <Users size={20} />
+                      {groupName}
+                    </h4>
+                    <div style={{ overflowX: 'auto' }}>
+                      <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 8px' }}>
+                        <thead>
+                          <tr style={{ textAlign: 'left', color: 'var(--text-secondary)', fontSize: '14px' }}>
+                            <th style={{ padding: '12px 24px' }}>Fecha</th>
+                            <th style={{ padding: '12px 24px' }}>Alumno</th>
+                            <th style={{ padding: '12px 24px' }}>Estado</th>
+                            <th style={{ padding: '12px 24px' }}>Motivo / Profesor</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {groupData.map((row, idx) => (
+                            <tr key={idx} className="glass-card">
+                              <td style={{ padding: '16px 24px' }}>{row.fecha}</td>
+                              <td style={{ padding: '16px 24px', fontWeight: 600 }}>{row.apellido}, {row.nombre}</td>
+                              <td style={{ padding: '16px 24px' }}>
+                                <span style={{ 
+                                  padding: '4px 12px', 
+                                  borderRadius: '20px', 
+                                  fontSize: '11px', 
+                                  fontWeight: 700,
+                                  background: row.presente === 1 ? 'rgba(34, 197, 94, 0.1)' : row.presente === 2 ? 'rgba(245, 158, 11, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                  color: row.presente === 1 ? 'var(--success)' : row.presente === 2 ? '#f59e0b' : 'var(--danger)'
+                                }}>
+                                  {row.presente === 1 ? 'PRESENTE' : row.presente === 2 ? 'JUSTIFICADO' : 'AUSENTE'}
+                                </span>
+                              </td>
+                              <td style={{ padding: '16px 24px' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                  {row.presente === 2 && row.observacion && (
+                                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#d97706' }}>
+                                      "{row.observacion}"
+                                    </span>
+                                  )}
+                                  {row.profesor_nombre && (
+                                    <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>
+                                      Reg: {row.profesor_nombre}
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                );
+              })}
               {historyData.length === 0 && <p style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>No hay registros para este período.</p>}
             </div>
           </div>
@@ -1129,6 +1164,40 @@ function App() {
                   Confirmar y Guardar
                 </button>
               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Justification Modal */}
+      <AnimatePresence>
+        {showJustifyModal.show && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, backdropFilter: 'blur(4px)' }}>
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="glass-container" 
+              style={{ width: '450px', padding: '32px' }}
+            >
+              <h3 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '16px' }}>Motivo de Justificación</h3>
+              <p style={{ color: 'var(--text-secondary)', marginBottom: '20px', fontSize: '14px' }}>
+                Ingresa el motivo por el cual el alumno <strong>{alumnos.find(a => a.id === showJustifyModal.alumnoId)?.apellido}</strong> tiene falta justificada:
+              </p>
+              <textarea 
+                className="glass-card"
+                style={{ width: '100%', minHeight: '100px', padding: '16px', outline: 'none', marginBottom: '24px', resize: 'none' }}
+                placeholder="Ej: Certificado médico, trámite familiar..."
+                value={observations[showJustifyModal.alumnoId || 0] || ''}
+                onChange={(e) => setObservations({ ...observations, [showJustifyModal.alumnoId || 0]: e.target.value })}
+                autoFocus
+              />
+              <button 
+                onClick={() => setShowJustifyModal({ show: false, alumnoId: null })}
+                style={{ width: '100%', padding: '14px', background: 'var(--accent-primary)', color: 'white', fontWeight: 600 }}
+              >
+                Confirmar Motivo
+              </button>
             </motion.div>
           </div>
         )}

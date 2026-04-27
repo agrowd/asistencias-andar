@@ -113,11 +113,12 @@ app.post('/api/asistencias', authenticateToken, async (req, res) => {
     const transactionFn = async (data) => {
         for (const item of data) {
             await db.prepare('DELETE FROM asistencias WHERE alumno_id = ? AND fecha = ?').run(item.alumno_id, date);
-            await db.prepare('INSERT INTO asistencias (alumno_id, fecha, presente, usuario_id) VALUES (?, ?, ?, ?)').run(
+            await db.prepare('INSERT INTO asistencias (alumno_id, fecha, presente, usuario_id, observacion) VALUES (?, ?, ?, ?, ?)').run(
                 item.alumno_id, 
                 date, 
                 item.presente,
-                req.user.id
+                req.user.id,
+                item.observacion || null
             );
         }
     };
@@ -183,7 +184,7 @@ app.get('/api/asistencias/history', authenticateToken, async (req, res) => {
         let query = `
             SELECT 
                 al.apellido, al.nombre, al.grupo,
-                asist.fecha, asist.presente,
+                asist.fecha, asist.presente, asist.observacion,
                 u.username as profesor_nombre
             FROM asistencias asist
             JOIN alumnos al ON asist.alumno_id = al.id

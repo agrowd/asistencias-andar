@@ -3,6 +3,7 @@
 - Despliegue oficial en Vercel.
 - Conexión con Neon PostgreSQL (Cloud).
 - Manejo de errores de sesión automático (Auto-logout on 401/403).
+- Lógica de asistencia invertida: **Ausente por defecto** (0), clic para marcar Presente (1).
 - Verificación final de integridad de datos.
 - **v1.0.0**: CRM inicial con Glassmorphism, Backend Express, y gestión de asistencias funcional.
 - **v1.0**: Sistema base, Autenticación, CRUD, Historial.

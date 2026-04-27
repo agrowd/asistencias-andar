@@ -16,8 +16,9 @@
 - [x] **Migración efectiva (SQLite -> Neon) - DONE**.
 - [x] **Despliegue en Vercel - DONE**.
 - [x] **Fix de Sesión y Manejo de Errores - DONE**.
+- [x] **Lógica de Asistencia: Ausente por Defecto - DONE**.
 - **Acción**: Fix de URL hardcodeada en App.tsx.
-- **Acción**: Movidas dependencias críticas (express, cors) a `dependencies`.
-- **Acción**: Implementación de `handleResponse` para auto-logout en 401/403.
+- **Acción**: Cambio de lógica: Ausente (0) por defecto para facilitar marcado de presentes.
+- **Acción**: Ajuste de ciclo de toggle: 0 -> 1 -> 2 -> 0.
 - **Acción**: Push final a GitHub realizado.
 - **Estado**: ✅ COMPLETADO. Sistema en producción estable.
