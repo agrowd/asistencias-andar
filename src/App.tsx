@@ -56,6 +56,7 @@ function App() {
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [showSidebar, setShowSidebar] = useState(false);
   const [monthlyGroupFilter, setMonthlyGroupFilter] = useState('Todos');
+  const [isRegistered, setIsRegistered] = useState(false);
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [loginError, setLoginError] = useState('');
@@ -79,7 +80,7 @@ function App() {
     if (token) {
       fetchAlumnos();
       if (view === 'reports' && user?.rol === 'admin') fetchStats();
-      if (view === 'history') fetchHistory();
+      if (view === 'history' || view === 'monthly') fetchHistory();
       if (view === 'users') fetchUsers();
     }
   }, [token, view, historyFilter.month, historyFilter.year]);
@@ -279,6 +280,7 @@ function App() {
         });
       }
       
+      setIsRegistered(data && data.length > 0);
       setAttendance(newState);
       setObservations(newObs);
     } catch (err) {
@@ -654,6 +656,11 @@ function App() {
                   <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
                     {presentCount} presentes / {filteredAlumnos.length} alumnos
                   </p>
+                  {!isRegistered && (
+                    <span style={{ fontSize: '11px', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger)', padding: '2px 8px', borderRadius: '4px', fontWeight: 600 }}>
+                      PENDIENTE DE CARGA
+                    </span>
+                  )}
                   <button 
                     onClick={resetAttendanceToPresent}
                     className="reset-button"
@@ -1181,7 +1188,7 @@ function App() {
                       const row: any[] = [`${a.apellido} ${a.nombre}`, a.grupo];
                       for (let d = 1; d <= daysInMonth; d++) {
                         const dateStr = `${historyFilter.year}-${historyFilter.month.toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
-                        const record = historyData.find(r => r.apellido === a.apellido && r.nombre === a.nombre && r.fecha === dateStr);
+                        const record = historyData.find(r => r.alumno_id === a.id && r.fecha === dateStr);
                         row.push(record ? (record.presente === 1 ? 'P' : record.presente === 2 ? 'J' : 'A') : '-');
                       }
                       return row;
@@ -1219,7 +1226,7 @@ function App() {
                       </td>
                       {Array.from({ length: new Date(historyFilter.year, historyFilter.month, 0).getDate() }, (_, i) => {
                         const dateStr = `${historyFilter.year}-${historyFilter.month.toString().padStart(2, '0')}-${(i + 1).toString().padStart(2, '0')}`;
-                        const record = historyData.find(r => r.apellido === a.apellido && r.nombre === a.nombre && r.fecha === dateStr);
+                        const record = historyData.find(r => r.alumno_id === a.id && r.fecha === dateStr);
                         let color = 'transparent';
                         let text = '-';
                         if (record) {

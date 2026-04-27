@@ -95,7 +95,12 @@ app.get('/api/asistencias', authenticateToken, async (req, res) => {
         return res.status(400).json({ error: 'Date is required (YYYY-MM-DD)' });
     }
     try {
-        const asistencias = await db.prepare('SELECT * FROM asistencias WHERE fecha = ?').all(date);
+        const asistencias = await db.prepare(`
+            SELECT a.*, u.username as profesor_nombre 
+            FROM asistencias a 
+            LEFT JOIN usuarios u ON a.usuario_id = u.id 
+            WHERE a.fecha = ?
+        `).all(date);
         res.json(asistencias);
     } catch (error) {
         console.error('Error fetching asistencias:', error);
@@ -183,7 +188,7 @@ app.get('/api/asistencias/history', authenticateToken, async (req, res) => {
     try {
         let query = `
             SELECT 
-                al.apellido, al.nombre, al.grupo,
+                al.id as alumno_id, al.apellido, al.nombre, al.grupo,
                 asist.fecha, asist.presente, asist.observacion,
                 u.username as profesor_nombre
             FROM asistencias asist
@@ -206,7 +211,7 @@ app.get('/api/asistencias/history', authenticateToken, async (req, res) => {
         query += " ORDER BY asist.fecha DESC, al.apellido ASC";
         
         const history = await db.prepare(query).all(...params);
-        res.json(history);
+        res.json(history.map(h => ({ ...h, alumno_id: h.id }))); // Ensure alumno_id is explicit if needed
     } catch (error) {
         console.error('History error:', error);
         res.status(500).json({ error: 'Internal Server Error' });
