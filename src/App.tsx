@@ -78,7 +78,7 @@ function App() {
   useEffect(() => {
     if (token) {
       fetchAlumnos();
-      if (view === 'reports' || view === 'attendance') fetchStats();
+      if (view === 'reports' && user?.rol === 'admin') fetchStats();
       if (view === 'history') fetchHistory();
       if (view === 'users') fetchUsers();
     }
@@ -136,13 +136,15 @@ function App() {
       });
       const summaryData = await handleResponse(summaryRes);
       
-      const criticalRes = await fetch('/api/stats/critical', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const criticalData = await handleResponse(criticalRes);
-
       if (summaryData) setStats(summaryData);
-      if (criticalData) setCriticalAlumnos(criticalData);
+      
+      if (user?.rol === 'admin') {
+        const criticalRes = await fetch('/api/stats/critical', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const criticalData = await handleResponse(criticalRes);
+        if (criticalData) setCriticalAlumnos(criticalData);
+      }
     } catch (err) {
       console.error('Failed to fetch stats', err);
     }
