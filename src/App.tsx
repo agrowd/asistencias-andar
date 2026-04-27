@@ -61,6 +61,7 @@ function App() {
   const [studentHistory, setStudentHistory] = useState<any[]>([]);
   const [observations, setObservations] = useState<ObservationState>({});
   const [showJustifyModal, setShowJustifyModal] = useState<{ show: boolean, alumnoId: number | null }>({ show: false, alumnoId: null });
+  const [reportFilter, setReportFilter] = useState<string>('Centro de Día');
 
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
@@ -766,22 +767,45 @@ function App() {
             </div>
 
             <div className="glass-container" style={{ padding: '32px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-                <XCircle color="var(--danger)" />
-                <h3 style={{ fontSize: '20px', fontWeight: 600 }}>Alumnos con Faltas Críticas (Este Mes)</h3>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <XCircle color="var(--danger)" />
+                  <h3 style={{ fontSize: '20px', fontWeight: 600 }}>Alumnos con Faltas Críticas (Este Mes)</h3>
+                </div>
+                
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  {['Centro de Día', 'Emprendedores'].map(g => (
+                    <button 
+                      key={g}
+                      onClick={() => setReportFilter(g)}
+                      className="glass-card"
+                      style={{ 
+                        padding: '8px 16px', 
+                        fontSize: '12px',
+                        background: reportFilter === g ? 'var(--accent-primary)' : 'white',
+                        color: reportFilter === g ? 'white' : 'var(--text-primary)'
+                      }}
+                    >
+                      {g}
+                    </button>
+                  ))}
+                </div>
               </div>
+
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {criticalAlumnos.length > 0 ? criticalAlumnos.map(alumno => (
-                  <div key={alumno.id} className="glass-card" style={{ padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <span style={{ fontWeight: 600 }}>{alumno.apellido}, {alumno.nombre}</span>
-                      <span style={{ fontSize: '12px', color: 'var(--text-secondary)', marginLeft: '12px' }}>{alumno.grupo}</span>
+                {criticalAlumnos.filter(a => a.grupo === reportFilter).length > 0 ? 
+                  criticalAlumnos.filter(a => a.grupo === reportFilter).map(alumno => (
+                    <div key={alumno.id} className="glass-card" style={{ padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <span style={{ fontWeight: 600 }}>{alumno.apellido}, {alumno.nombre}</span>
+                        <span style={{ fontSize: '12px', color: 'var(--text-secondary)', marginLeft: '12px' }}>{alumno.grupo}</span>
+                      </div>
+                      <span style={{ color: 'var(--danger)', fontWeight: 700, background: 'rgba(239, 68, 68, 0.1)', padding: '4px 12px', borderRadius: '20px' }}>
+                        {alumno.faltas} inasistencias
+                      </span>
                     </div>
-                    <span style={{ color: 'var(--danger)', fontWeight: 700, background: 'rgba(239, 68, 68, 0.1)', padding: '4px 12px', borderRadius: '20px' }}>
-                      {alumno.faltas} inasistencias
-                    </span>
-                  </div>
-                )) : <p style={{ color: 'var(--text-secondary)' }}>No hay alumnos con faltas críticas.</p>}
+                  )) : <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '20px' }}>No hay alumnos con faltas críticas en {reportFilter}.</p>
+                }
               </div>
             </div>
           </div>
@@ -1177,14 +1201,25 @@ function App() {
       {/* Justification Modal */}
       <AnimatePresence>
         {showJustifyModal.show && (
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, backdropFilter: 'blur(4px)' }}>
+          <div 
+            onClick={() => setShowJustifyModal({ show: false, alumnoId: null })}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, backdropFilter: 'blur(4px)' }}
+          >
             <motion.div 
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
               className="glass-container" 
-              style={{ width: '450px', padding: '32px' }}
+              style={{ width: '450px', padding: '32px', position: 'relative' }}
             >
+              <button 
+                onClick={() => setShowJustifyModal({ show: false, alumnoId: null })}
+                style={{ position: 'absolute', top: '16px', right: '16px', background: 'transparent', padding: '8px' }}
+              >
+                <XCircle size={24} color="var(--text-secondary)" />
+              </button>
+
               <h3 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '16px' }}>Motivo de Justificación</h3>
               <p style={{ color: 'var(--text-secondary)', marginBottom: '20px', fontSize: '14px' }}>
                 Ingresa el motivo por el cual el alumno <strong>{alumnos.find(a => a.id === showJustifyModal.alumnoId)?.apellido}</strong> tiene falta justificada:
