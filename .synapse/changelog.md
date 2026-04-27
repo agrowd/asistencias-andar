@@ -1,3 +1,10 @@
+## [1.2.0] - 2026-04-27
+### Added
+- Nuevo campo `observacion` en base de datos para justificaciones.
+- Modal automático de justificación al marcar falta justificada.
+- Vista de historial organizada y separada por grupos (Centro de Día / Emprendedores).
+- Migración de esquema en Neon PostgreSQL.
+
 ## [1.0.0] - 2026-04-27
 ### Added
 - Despliegue oficial en Vercel.
@@ -5,7 +12,8 @@
 - Manejo de errores de sesión automático (Auto-logout on 401/403).
 - Lógica de asistencia invertida: **Ausente por defecto** (0), clic para marcar Presente (1).
 - Verificación final de integridad de datos.
+
 - **v1.0.0**: CRM inicial con Glassmorphism, Backend Express, y gestión de asistencias funcional.
 - **v1.0**: Sistema base, Autenticación, CRUD, Historial.
 - **v1.1**: Responsive, Exportación Excel/PDF, Lógica Inversa, Atribución de Profesores.
-- **v1.2**: Sistema de 3 Estados (Justificado), Saneamiento de DB, Gestión Modular (Modales), Perfil de Alumno.
+- **v1.2**: Soporte Vercel, Neon DB, Sesiones robustas.

@@ -239,11 +239,9 @@ function App() {
       const data = await handleResponse(res);
       if (!data) return;
 
-      const newState: AsistenciaState = {};
-      const newObs: ObservationState = {};
-      // POR DEFECTO: Todos ausentes (0)
+      // VOLVEMOS A LOGICA INVERSA: Todos presentes por defecto (1)
       alumnos.forEach(a => {
-        newState[a.id] = 0;
+        newState[a.id] = 1;
       });
       
       // Si hay registro en DB, sobreescribimos con la realidad guardada
@@ -266,15 +264,15 @@ function App() {
 
   const toggleAttendance = (id: number) => {
     setAttendance(prev => {
-      const currentState = prev[id] === undefined ? 0 : prev[id];
-      // Ciclo: 0 (Ausente) -> 1 (Presente) -> 2 (Justificado) -> 0
-      let nextState = 0;
-      if (currentState === 0) nextState = 1;
-      else if (currentState === 1) {
+      const currentState = prev[id] === undefined ? 1 : prev[id];
+      // Ciclo: 1 (Presente) -> 0 (Ausente) -> 2 (Justificado) -> 1
+      let nextState = 1;
+      if (currentState === 1) nextState = 0;
+      else if (currentState === 0) {
         nextState = 2;
         setShowJustifyModal({ show: true, alumnoId: id });
       }
-      else nextState = 0;
+      else nextState = 1;
       
       return {
         ...prev,

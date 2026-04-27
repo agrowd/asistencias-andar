@@ -17,8 +17,9 @@
 - [x] **Despliegue en Vercel - DONE**.
 - [x] **Fix de Sesión y Manejo de Errores - DONE**.
 - [x] **Lógica de Asistencia: Ausente por Defecto - DONE**.
-- **Acción**: Fix de URL hardcodeada en App.tsx.
-- **Acción**: Cambio de lógica: Ausente (0) por defecto para facilitar marcado de presentes.
-- **Acción**: Ajuste de ciclo de toggle: 0 -> 1 -> 2 -> 0.
-- **Acción**: Push final a GitHub realizado.
-- **Estado**: ✅ COMPLETADO. Sistema en producción estable.
+- [x] **Motivos de Justificación y Modal - DONE**.
+- [x] **Historial Separado por Grupos - DONE**.
+- **Acción**: Migración de DB (SQLite/Neon) para columna `observacion`.
+- **Acción**: Nuevo modal de justificación en el flujo de toggle.
+- **Acción**: Refactor de vista Historial con agrupamiento dinámico.
+- **Estado**: ✅ COMPLETADO. Versión 1.2 lista en producción.
