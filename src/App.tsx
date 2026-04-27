@@ -766,47 +766,33 @@ function App() {
               ))}
             </div>
 
-            <div className="glass-container" style={{ padding: '32px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <XCircle color="var(--danger)" />
-                  <h3 style={{ fontSize: '20px', fontWeight: 600 }}>Alumnos con Faltas Críticas (Este Mes)</h3>
-                </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+              {['Centro de Día', 'Emprendedores'].map(groupName => {
+                const groupAlumnos = criticalAlumnos.filter(a => a.grupo === groupName);
+                if (groupAlumnos.length === 0) return null;
                 
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  {['Centro de Día', 'Emprendedores'].map(g => (
-                    <button 
-                      key={g}
-                      onClick={() => setReportFilter(g)}
-                      className="glass-card"
-                      style={{ 
-                        padding: '8px 16px', 
-                        fontSize: '12px',
-                        background: reportFilter === g ? 'var(--accent-primary)' : 'white',
-                        color: reportFilter === g ? 'white' : 'var(--text-primary)'
-                      }}
-                    >
-                      {g}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {criticalAlumnos.filter(a => a.grupo === reportFilter).length > 0 ? 
-                  criticalAlumnos.filter(a => a.grupo === reportFilter).map(alumno => (
-                    <div key={alumno.id} className="glass-card" style={{ padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div>
-                        <span style={{ fontWeight: 600 }}>{alumno.apellido}, {alumno.nombre}</span>
-                        <span style={{ fontSize: '12px', color: 'var(--text-secondary)', marginLeft: '12px' }}>{alumno.grupo}</span>
-                      </div>
-                      <span style={{ color: 'var(--danger)', fontWeight: 700, background: 'rgba(239, 68, 68, 0.1)', padding: '4px 12px', borderRadius: '20px' }}>
-                        {alumno.faltas} inasistencias
-                      </span>
+                return (
+                  <div key={groupName} className="glass-container" style={{ padding: '32px', background: 'rgba(255,255,255,0.4)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+                      <Users size={20} color="var(--accent-primary)" />
+                      <h3 style={{ fontSize: '20px', fontWeight: 700 }}>{groupName} - Faltas Críticas</h3>
                     </div>
-                  )) : <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '20px' }}>No hay alumnos con faltas críticas en {reportFilter}.</p>
-                }
-              </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {groupAlumnos.map(alumno => (
+                        <div key={alumno.id} className="glass-card" style={{ padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div>
+                            <span style={{ fontWeight: 600 }}>{alumno.apellido}, {alumno.nombre}</span>
+                          </div>
+                          <span style={{ color: 'var(--danger)', fontWeight: 700, background: 'rgba(239, 68, 68, 0.1)', padding: '4px 12px', borderRadius: '20px' }}>
+                            {alumno.faltas} inasistencias
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+              {criticalAlumnos.length === 0 && <p style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>No hay alumnos con faltas críticas este mes.</p>}
             </div>
           </div>
         )}
