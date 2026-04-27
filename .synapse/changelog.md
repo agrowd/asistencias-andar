@@ -1,4 +1,19 @@
-## [1.2.0] - 2026-04-27
+## [1.2.4] - 2026-04-27
+### Added
+- Filtro por grupo (Centro de Día / Emprendedores) en el módulo "Sábana Mensual".
+- Exportación a Excel dinámica que respeta los filtros aplicados.
+- Diseño 100% Responsive: Sidebar hamburguesa deslizable y layout optimizado para Mobile.
+### Fixed
+- Error de importación del icono `Lock`.
+- Mismatched tags JSX en el componente principal.
+
+## [1.2.3] - 2026-04-27
+### Added
+- Módulo "Sábana Mensual" (Grilla estilo Excel).
+- Lista de usuarios en Administración con opción de eliminar profesores.
+### Fixed
+- Error en la creación de usuarios que impedía guardar nuevos profesores.
+
 ### Added
 - Nuevo campo `observacion` en base de datos para justificaciones.
 - Modal automático de justificación al marcar falta justificada.

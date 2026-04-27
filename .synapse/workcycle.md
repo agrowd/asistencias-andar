@@ -1,5 +1,16 @@
 # 🔄 Workcycle: Asistencias Andar
 
+## [2026-04-27] Phase 8: Mobile & Filtros Mensuales
+**Estado:** ✅ FINALIZADA
+- Se implementó el filtrado por grupo (Centro de Día / Emprendedores) en la Sábana Mensual.
+- La exportación a Excel ahora respeta el filtro seleccionado.
+- Adaptación completa a Mobile:
+  - Menú lateral hamburguesa deslizable.
+  - Layout responsive con CSS variables.
+  - Tablas con scroll horizontal optimizado.
+- Corrección de errores de sintaxis JSX y restauración de iconos.
+- Commit: `7f7787d`
+
 ## [2026-04-23] Phase 5: Refinement & Advanced Management
 - **Acción**: Análisis integral del sistema.
 - **Acción**: Auditoría de base de datos (detectados registros residuales).
