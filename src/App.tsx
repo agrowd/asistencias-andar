@@ -14,6 +14,7 @@ import {
   Download,
   History,
   LogOut,
+  Lock,
   User as UserIcon,
   AlertCircle,
   TableProperties,
