@@ -109,16 +109,30 @@ function App() {
     setView('attendance');
   };
 
+  const handleResponse = async (res: Response) => {
+    if (res.status === 401 || res.status === 403) {
+      handleLogout();
+      return null;
+    }
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'API Error');
+    return data;
+  };
+
   const fetchStats = async () => {
     try {
       const summaryRes = await fetch('/api/stats/summary', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
+      const summaryData = await handleResponse(summaryRes);
+      
       const criticalRes = await fetch('/api/stats/critical', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      setStats(await summaryRes.json());
-      setCriticalAlumnos(await criticalRes.json());
+      const criticalData = await handleResponse(criticalRes);
+
+      if (summaryData) setStats(summaryData);
+      if (criticalData) setCriticalAlumnos(criticalData);
     } catch (err) {
       console.error('Failed to fetch stats', err);
     }
@@ -129,8 +143,8 @@ function App() {
       const res = await fetch(`/api/asistencias/history?month=${historyFilter.month}&year=${historyFilter.year}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      const data = await res.json();
-      setHistoryData(data);
+      const data = await handleResponse(res);
+      if (data) setHistoryData(data);
     } catch (err) {
       console.error('Failed to fetch history', err);
     }
@@ -149,7 +163,8 @@ function App() {
         },
         body: JSON.stringify(studentForm)
       });
-      if (res.ok) {
+      const data = await handleResponse(res);
+      if (data) {
         fetchAlumnos();
         setModal({ type: null });
         setStudentForm({ nombre: '', apellido: '', grupo: 'Centro de Día' });
@@ -170,7 +185,8 @@ function App() {
         },
         body: JSON.stringify(userForm)
       });
-      if (res.ok) {
+      const data = await handleResponse(res);
+      if (data) {
         setModal({ type: null });
         setUserForm({ username: '', password: '', rol: 'profe' });
         alert('Usuario guardado con éxito');
@@ -185,8 +201,8 @@ function App() {
       const res = await fetch(`/api/asistencias/history?alumno_id=${alumnoId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      const data = await res.json();
-      setStudentHistory(data);
+      const data = await handleResponse(res);
+      if (data) setStudentHistory(data);
     } catch (err) {
       console.error('Failed to fetch student history', err);
     }
@@ -197,8 +213,10 @@ function App() {
       const res = await fetch('/api/alumnos', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      const data = await res.json();
-      setAlumnos(data);
+      const data = await handleResponse(res);
+      if (Array.isArray(data)) {
+        setAlumnos(data);
+      }
     } catch (err) {
       console.error('Failed to fetch alumnos', err);
     } finally {
@@ -212,7 +230,9 @@ function App() {
       const res = await fetch(`/api/asistencias?date=${date}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      const data = await res.json();
+      const data = await handleResponse(res);
+      if (!data) return;
+
       const newState: AsistenciaState = {};
       // LOGICA INVERSA: Todos presentes por defecto (1)
       alumnos.forEach(a => {
@@ -272,7 +292,8 @@ function App() {
         body: JSON.stringify(payload)
       });
 
-      if (res.ok) {
+      const data = await handleResponse(res);
+      if (data) {
         setSaveStatus('success');
         setTimeout(() => setSaveStatus('idle'), 3000);
       } else {
@@ -787,11 +808,12 @@ function App() {
                       <button 
                         onClick={async () => {
                           if (confirm('¿Eliminar alumno?')) {
-                            await fetch(`/api/alumnos/${alumno.id}`, {
+                            const res = await fetch(`/api/alumnos/${alumno.id}`, {
                               method: 'DELETE',
                               headers: { 'Authorization': `Bearer ${token}` }
                             });
-                            fetchAlumnos();
+                            const data = await handleResponse(res);
+                            if (data) fetchAlumnos();
                           }
                         }}
                         style={{ padding: '8px', color: 'var(--danger)', background: 'transparent' }}
