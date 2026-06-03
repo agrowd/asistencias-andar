@@ -265,13 +265,16 @@ function App() {
       const newState: AsistenciaState = {};
       const newObs: ObservationState = {};
 
-      // VOLVEMOS A LOGICA INVERSA: Todos presentes por defecto (1)
+      const hasData = data && data.length > 0;
+
+      // Si la fecha ya tiene registros guardados en la DB, los alumnos sin registro
+      // se inicializan en 0 (Ausente). Si no tiene registros (es un día nuevo), en 1 (Presente).
       alumnos.forEach(a => {
-        newState[a.id] = 1;
+        newState[a.id] = hasData ? 0 : 1;
       });
       
       // Si hay registro en DB, sobreescribimos con la realidad guardada
-      if (data && data.length > 0) {
+      if (hasData) {
         data.forEach((a: any) => {
           newState[a.alumno_id] = a.presente; // 0, 1, 2
           if (a.observacion) newObs[a.alumno_id] = a.observacion;
@@ -281,19 +284,12 @@ function App() {
         });
       }
       
-      setIsRegistered(data && data.length > 0);
+      setIsRegistered(hasData);
       setAttendance(newState);
       setObservations(newObs);
     } catch (err) {
       console.error('Failed to fetch attendance', err);
     }
-  };
-  const resetAttendanceToPresent = () => {
-    const newState: AsistenciaState = {};
-    alumnos.forEach(a => {
-      newState[a.id] = 1;
-    });
-    setAttendance(newState);
   };
 
   const toggleAttendance = (id: number) => {
@@ -662,13 +658,6 @@ function App() {
                       PENDIENTE DE CARGA
                     </span>
                   )}
-                  <button 
-                    onClick={resetAttendanceToPresent}
-                    className="reset-button"
-                    style={{ fontSize: '11px', background: 'rgba(34, 197, 94, 0.1)', color: 'var(--success)', padding: '2px 8px', borderRadius: '4px', border: '1px solid rgba(34, 197, 94, 0.2)' }}
-                  >
-                    Reiniciar hoy a Presentes
-                  </button>
                 </div>
               </div>
 

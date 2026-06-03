@@ -1,3 +1,9 @@
+## [1.2.5] - 2026-06-03
+### Added
+- Lógica inteligente de inicialización: Los alumnos sin registros en fechas cerradas aparecen por defecto en "Ausente", previniendo que concurrentes nuevos figuren como "Presente" en días pasados.
+### Removed
+- Botón "Reiniciar hoy a Presentes" de la interfaz de asistencias para evitar confusiones en la carga.
+
 ## [1.2.4] - 2026-04-27
 ### Added
 - Filtro por grupo (Centro de Día / Emprendedores) en el módulo "Sábana Mensual".
@@ -6,6 +12,7 @@
 ### Fixed
 - Error de importación del icono `Lock`.
 - Mismatched tags JSX en el componente principal.
+
 
 ## [1.2.3] - 2026-04-27
 ### Added
