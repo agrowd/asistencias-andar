@@ -1,8 +1,13 @@
+## [1.2.6] - 2026-06-30
+### Added
+- Alta del concurrente Matias Maita en el grupo de Emprendedores directamente en la base de datos de producción (ID: 85).
+
 ## [1.2.5] - 2026-06-03
 ### Added
 - Lógica inteligente de inicialización: Los alumnos sin registros en fechas cerradas aparecen por defecto en "Ausente", previniendo que concurrentes nuevos figuren como "Presente" en días pasados.
 ### Removed
 - Botón "Reiniciar hoy a Presentes" de la interfaz de asistencias para evitar confusiones en la carga.
+
 
 ## [1.2.4] - 2026-04-27
 ### Added
