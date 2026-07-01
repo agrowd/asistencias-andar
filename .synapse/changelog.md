@@ -1,6 +1,14 @@
+## [1.2.7] - 2026-07-01
+### Added
+- Blindaje contra fines de semana en reportes y estadísticas (promedio mensual y faltas críticas) a nivel de base de datos usando dialéctica condicional SQL (PostgreSQL/SQLite).
+- Bloqueo en la interfaz de asistencias para días sábados y domingos con aviso instructivo y botón de guardar deshabilitado.
+### Fixed
+- Depuración y eliminación de 5,702 registros de fin de semana guardados por error en la base de datos de producción.
+
 ## [1.2.6] - 2026-06-30
 ### Added
 - Alta del concurrente Nicolas Maita en el grupo de Emprendedores directamente en la base de datos de producción (ID: 85) (corregido de Matias el 2026-07-01).
+
 
 ## [1.2.5] - 2026-06-03
 ### Added

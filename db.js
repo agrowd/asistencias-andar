@@ -10,10 +10,12 @@ const isProduction = process.env.DATABASE_URL !== undefined;
 
 const DIALECT = isProduction ? {
     NOW: 'CURRENT_DATE',
-    START_OF_MONTH: "date_trunc('month', CURRENT_DATE)::DATE"
+    START_OF_MONTH: "date_trunc('month', CURRENT_DATE)::DATE",
+    IS_WEEKDAY: "EXTRACT(ISODOW FROM asist.fecha::DATE) NOT IN (6, 7)"
 } : {
     NOW: "date('now')",
-    START_OF_MONTH: "date('now', 'start of month')"
+    START_OF_MONTH: "date('now', 'start of month')",
+    IS_WEEKDAY: "strftime('%w', asist.fecha) NOT IN ('0', '6')"
 };
 
 let db;
@@ -25,7 +27,8 @@ if (isProduction) {
         prepare: (query) => {
             let finalQuery = query
                 .replace(/DIALECT_NOW/g, DIALECT.NOW)
-                .replace(/DIALECT_START_OF_MONTH/g, DIALECT.START_OF_MONTH);
+                .replace(/DIALECT_START_OF_MONTH/g, DIALECT.START_OF_MONTH)
+                .replace(/DIALECT_IS_WEEKDAY/g, DIALECT.IS_WEEKDAY);
 
             let count = 0;
             const pgQuery = finalQuery.replace(/\?/g, () => `$${++count}`);
@@ -76,7 +79,8 @@ if (isProduction) {
             prepare: (query) => {
                 let finalQuery = query
                     .replace(/DIALECT_NOW/g, DIALECT.NOW)
-                    .replace(/DIALECT_START_OF_MONTH/g, DIALECT.START_OF_MONTH);
+                    .replace(/DIALECT_START_OF_MONTH/g, DIALECT.START_OF_MONTH)
+                    .replace(/DIALECT_IS_WEEKDAY/g, DIALECT.IS_WEEKDAY);
                     
                 const stmt = sqliteDb.prepare(finalQuery);
                 return {

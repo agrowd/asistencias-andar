@@ -41,6 +41,13 @@ interface AsistenciaState {
 interface ObservationState {
   [key: number]: string;
 }
+
+const isWeekend = (dateString: string) => {
+  const d = new Date(dateString + 'T00:00:00');
+  const day = d.getDay();
+  return day === 0 || day === 6; // 0: Domingo, 6: Sábado
+};
+
 function App() {
   const [alumnos, setAlumnos] = useState<Alumno[]>([]);
   const [loading, setLoading] = useState(true);
@@ -350,6 +357,8 @@ function App() {
       setSaveStatus('error');
     }
   };
+
+  const selectedDateIsWeekend = isWeekend(date);
 
   const filteredAlumnos = alumnos.filter(a => 
     a.grupo === selectedGroup && 
@@ -699,14 +708,16 @@ function App() {
 
                 <button 
                   onClick={() => setShowConfirmModal(true)}
+                  disabled={selectedDateIsWeekend}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px',
                     padding: '12px 24px',
-                    background: saveStatus === 'success' ? 'var(--success)' : 'var(--accent-primary)',
-                    color: 'white',
-                    boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)'
+                    background: selectedDateIsWeekend ? '#cbd5e1' : (saveStatus === 'success' ? 'var(--success)' : 'var(--accent-primary)'),
+                    color: selectedDateIsWeekend ? '#94a3b8' : 'white',
+                    cursor: selectedDateIsWeekend ? 'not-allowed' : 'pointer',
+                    boxShadow: selectedDateIsWeekend ? 'none' : '0 4px 12px rgba(99, 102, 241, 0.3)'
                   }}
                 >
                   {saveStatus === 'saving' ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
@@ -716,8 +727,18 @@ function App() {
             </div>
 
             {/* Attendance Grid */}
-            <div className="glass-container" style={{ flex: 1, padding: '32px', overflowY: 'auto' }}>
-              {loading ? (
+            <div className="glass-container" style={{ flex: 1, padding: '32px', overflowY: 'auto', display: selectedDateIsWeekend ? 'flex' : 'block', alignItems: 'center', justifyContent: 'center' }}>
+              {selectedDateIsWeekend ? (
+                <div style={{ textAlign: 'center', padding: '40px 20px', maxWidth: '400px', display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center' }}>
+                  <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(99, 102, 241, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-primary)' }}>
+                    <Calendar size={32} />
+                  </div>
+                  <h3 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--text-primary)' }}>Fin de Semana No Laborable</h3>
+                  <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                    No se registra asistencia para los días sábados y domingos. Por favor, selecciona un día de lunes a viernes.
+                  </p>
+                </div>
+              ) : loading ? (
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '100px' }}>
                   <Loader2 className="animate-spin" size={48} color="var(--accent-primary)" />
                 </div>

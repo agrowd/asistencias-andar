@@ -43,7 +43,25 @@ El usuario aclaró que el nombre correcto del alumno es "Nicolas Maita", no "Mat
 
 ## 2. Acciones Realizadas
 - Se ejecutó un UPDATE en la base de datos de producción (Neon PostgreSQL) para corregir el nombre del ID `85` a `Nicolas`.
-- Se verificó que el cambio persistiera correctamente.
 - Se actualizaron los archivos `.synapse/workcycle.md` y `.synapse/changelog.md` para reflejar la corrección del nombre.
+
+---
+
+# Registro de Conversación (2026-07-01 - Sesión 2)
+
+## 1. Solicitud del Usuario
+El usuario solicitó que las asistencias no cuenten los sábados y domingos (fines de semana).
+
+## 2. Diagnóstico y Causa Raíz
+- Se detectaron 5,702 registros de asistencia guardados en fines de semana con valor `0` (Ausente), los cuales se originaron por el script de importación inicial del Excel (`import_excel.py`) que importó los días del 1 al 31 de corrido.
+- Estos registros distorsionaban drásticamente el promedio mensual de asistencia y las listas de alumnos críticos con faltas acumuladas irreales.
+
+## 3. Acciones Realizadas
+- **Depuración de Base de Datos**: Se eliminaron los 5,702 registros de fin de semana de la tabla `asistencias` en producción.
+- **db.js**: Se añadió la variable de dialecto `DIALECT_IS_WEEKDAY` para excluir fines de semana usando SQL nativo en Postgres (`EXTRACT(ISODOW)`) y SQLite (`strftime`).
+- **api/index.js**: Se actualizaron los endpoints de estadísticas (`/api/stats/summary` y `/api/stats/critical`) para incluir el filtro de exclusión de fin de semana.
+- **src/App.tsx**: Se implementó una lógica que deshabilita el botón de guardar y muestra un banner amigable informando que es fin de semana no laborable si el usuario selecciona un sábado o domingo en la interfaz.
+- **Validación**: Se compiló con éxito mediante `npm run build` y se actualizaron los archivos del repositorio.
+
 
 

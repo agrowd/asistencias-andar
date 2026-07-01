@@ -32,3 +32,8 @@
 - **Acción**: Incorporación del joven Nicolas Maita (originalmente ingresado como Matias por error) para el grupo Emprendedores en la base de datos de producción (Neon PostgreSQL).
 - **Acción**: Corrección del nombre en la fila de la base de datos (ID: 85) el 2026-07-01.
 - **Estado**: ✅ COMPLETADO. Fila corregida a Nicolas Maita (ID: 85) exitosamente.
+
+## [2026-07-01] Phase 11: Exclusión de Sábados y Domingos
+- **Acción**: Diagnóstico de 5,702 registros residuales de fin de semana afectando promedios y reportes de alumnos críticos.
+- **Acción**: Preparación de plan de depuración y blindaje del backend/frontend.
+- **Estado**: ✅ COMPLETADO. Depuración de 5,702 registros de fin de semana realizada con éxito. Blindaje del backend (db.js y api/index.js) y validaciones en el frontend (App.tsx) completados. Compilación exitosa.

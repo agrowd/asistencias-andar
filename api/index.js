@@ -228,7 +228,7 @@ app.get('/api/stats/summary', authenticateToken, async (req, res) => {
                 al.grupo, 
                 CAST(COALESCE(AVG(CASE WHEN asist.presente = 1 THEN 1 ELSE 0 END), 0) * 100 AS INTEGER) as promedio
             FROM alumnos al
-            LEFT JOIN asistencias asist ON al.id = asist.alumno_id AND asist.fecha >= DIALECT_START_OF_MONTH
+            LEFT JOIN asistencias asist ON al.id = asist.alumno_id AND asist.fecha >= DIALECT_START_OF_MONTH AND DIALECT_IS_WEEKDAY
             GROUP BY al.grupo
         `).all();
 
@@ -251,7 +251,7 @@ app.get('/api/stats/critical', authenticateToken, isAdmin, async (req, res) => {
                 SUM(CASE WHEN asist.presente = 0 THEN 1 ELSE 0 END) as faltas
             FROM alumnos al
             JOIN asistencias asist ON al.id = asist.alumno_id
-            WHERE asist.fecha >= DIALECT_START_OF_MONTH
+            WHERE asist.fecha >= DIALECT_START_OF_MONTH AND DIALECT_IS_WEEKDAY
             GROUP BY al.id
             HAVING SUM(CASE WHEN asist.presente = 0 THEN 1 ELSE 0 END) > 4
             ORDER BY faltas DESC
