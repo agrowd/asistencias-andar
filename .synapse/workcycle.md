@@ -37,3 +37,7 @@
 - **Acción**: Diagnóstico de 5,702 registros residuales de fin de semana afectando promedios y reportes de alumnos críticos.
 - **Acción**: Preparación de plan de depuración y blindaje del backend/frontend.
 - **Estado**: ✅ COMPLETADO. Depuración de 5,702 registros de fin de semana realizada con éxito. Blindaje del backend (db.js y api/index.js) y validaciones en el frontend (App.tsx) completados. Compilación exitosa.
+
+## [2026-09-28] Phase 12: Alta de Usuario Docente
+- **Acción**: Creación del usuario `martina.rivero@granjaandar.org.ar` con rol `profe` y contraseña encriptada con bcrypt.
+- **Estado**: ✅ COMPLETADO. Usuario insertado en Neon PostgreSQL (ID: 11) y sincronizado en SQLite local.

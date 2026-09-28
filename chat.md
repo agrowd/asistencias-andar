@@ -63,5 +63,16 @@ El usuario solicitó que las asistencias no cuenten los sábados y domingos (fin
 - **src/App.tsx**: Se implementó una lógica que deshabilita el botón de guardar y muestra un banner amigable informando que es fin de semana no laborable si el usuario selecciona un sábado o domingo en la interfaz.
 - **Validación**: Se compiló con éxito mediante `npm run build` y se actualizaron los archivos del repositorio.
 
+---
 
+# Registro de Conversación (2026-09-28)
+
+## 1. Solicitud del Usuario
+El usuario consultó por la lista de todos los usuarios registrados en el sistema, y luego solicitó crear un nuevo usuario para `martina.rivero@granjaandar.org.ar` con contraseña `Martina1`.
+
+## 2. Acciones Realizadas
+- Se consultó la tabla `usuarios` en la base de datos de producción (Neon PostgreSQL), listando los 7 usuarios existentes.
+- Se creó el nuevo usuario `martina.rivero@granjaandar.org.ar` con rol `profe` y contraseña encriptada con bcrypt (ID: 11 en Neon PostgreSQL).
+- Se sincronizó la creación del usuario en la base de datos local SQLite.
+- Se actualizaron los archivos de memoria persistente `.synapse/workcycle.md` y `.synapse/changelog.md`.
 

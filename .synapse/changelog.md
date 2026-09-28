@@ -1,9 +1,14 @@
+## [1.2.8] - 2026-09-28
+### Added
+- Creación de usuario docente para `martina.rivero@granjaandar.org.ar` con rol `profe` en la base de datos de producción (ID: 11) y local.
+
 ## [1.2.7] - 2026-07-01
 ### Added
 - Blindaje contra fines de semana en reportes y estadísticas (promedio mensual y faltas críticas) a nivel de base de datos usando dialéctica condicional SQL (PostgreSQL/SQLite).
 - Bloqueo en la interfaz de asistencias para días sábados y domingos con aviso instructivo y botón de guardar deshabilitado.
 ### Fixed
 - Depuración y eliminación de 5,702 registros de fin de semana guardados por error en la base de datos de producción.
+
 
 ## [1.2.6] - 2026-06-30
 ### Added
